@@ -28,5 +28,6 @@ export async function listEvents(): Promise<Event[]> {
     attendingCustomers: event.attendingCustomers.map((customer) => customer.name),
     status: event.status as EventStatus,
     notes: event.notes,
+    registrationCost: event.registrationCost ?? undefined,
   }));
 }

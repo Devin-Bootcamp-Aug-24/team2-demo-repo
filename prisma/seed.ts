@@ -7,7 +7,7 @@ async function main() {
   for (const event of events) {
     await prisma.event.upsert({
       where: { id: event.id },
-      update: {},
+      update: { registrationCost: event.registrationCost ?? null },
       create: {
         id: event.id,
         name: event.name,
@@ -22,6 +22,7 @@ async function main() {
         managedBy: event.managedBy,
         status: event.status,
         notes: event.notes,
+        registrationCost: event.registrationCost ?? null,
         attendingCustomers: {
           create: event.attendingCustomers.map((name) => ({ name })),
         },

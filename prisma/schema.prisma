@@ -27,6 +27,7 @@ model Event {
   managedBy             String
   status                EventStatus
   notes                 String
+  registrationCost      Int?
   attendingCustomers    AttendingCustomer[]
 
   @@index([startDate])

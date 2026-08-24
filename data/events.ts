@@ -13,11 +13,13 @@ export type Event = {
   attendingCustomers: string[];
   status: EventStatus;
   notes: string;
+  registrationCost?: number;
 };
 
 export const events: Event[] = [
   {
     id: "evt-001",
+    registrationCost: 0,
     name: "AUSA Annual Meeting & Exposition",
     startDate: "2025-10-13",
     endDate: "2025-10-15",
@@ -32,6 +34,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-002",
+    registrationCost: 1795,
     name: "GEOINT Symposium",
     startDate: "2025-10-27",
     endDate: "2025-10-29",
@@ -46,6 +49,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-003",
+    registrationCost: 1050,
     name: "DoDIIS Worldwide",
     startDate: "2025-11-17",
     endDate: "2025-11-19",
@@ -60,6 +64,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-004",
+    registrationCost: 795,
     name: "AFCEA TechNet Indo-Pacific",
     startDate: "2025-11-04",
     endDate: "2025-11-06",
@@ -74,6 +79,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-005",
+    registrationCost: 950,
     name: "Defense Intelligence Conference",
     startDate: "2025-12-02",
     endDate: "2025-12-03",
@@ -88,6 +94,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-006",
+    registrationCost: 1100,
     name: "AFA Warfare Symposium",
     startDate: "2026-03-02",
     endDate: "2026-03-04",
@@ -102,6 +109,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-007",
+    registrationCost: 1195,
     name: "AFCEA WEST",
     startDate: "2026-02-10",
     endDate: "2026-02-12",
@@ -116,6 +124,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-008",
+    registrationCost: 875,
     name: "Army Aviation Mission Solutions Summit",
     startDate: "2026-04-29",
     endDate: "2026-05-01",
@@ -130,6 +139,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-009",
+    registrationCost: 1250,
     name: "SOF Week",
     startDate: "2026-05-04",
     endDate: "2026-05-08",
@@ -144,6 +154,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-010",
+    registrationCost: 495,
     name: "Sea-Air-Space Exposition",
     startDate: "2026-04-20",
     endDate: "2026-04-22",
@@ -158,6 +169,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-011",
+    registrationCost: 1095,
     name: "TechNet Cyber",
     startDate: "2026-05-11",
     endDate: "2026-05-13",
@@ -172,6 +184,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-012",
+    registrationCost: 1150,
     name: "SOFIC",
     startDate: "2026-05-18",
     endDate: "2026-05-21",
@@ -186,6 +199,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-013",
+    registrationCost: 1150,
     name: "Special Operations Forces Industry Conference",
     startDate: "2026-06-01",
     endDate: "2026-06-03",
@@ -200,6 +214,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-014",
+    registrationCost: 725,
     name: "AFCEA Army Signal Conference",
     startDate: "2026-06-09",
     endDate: "2026-06-11",
@@ -214,6 +229,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-015",
+    registrationCost: 350,
     name: "Modern Day Marine",
     startDate: "2026-05-05",
     endDate: "2026-05-07",
@@ -228,6 +244,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-016",
+    registrationCost: 650,
     name: "GEOINT Forum",
     startDate: "2026-06-22",
     endDate: "2026-06-24",
@@ -242,6 +259,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-017",
+    registrationCost: 0,
     name: "Army Futures Command Network Modernization",
     startDate: "2026-07-07",
     endDate: "2026-07-08",
@@ -256,6 +274,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-018",
+    registrationCost: 1295,
     name: "Department of the Air Force IT Conference",
     startDate: "2026-07-13",
     endDate: "2026-07-16",
@@ -270,6 +289,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-019",
+    registrationCost: 995,
     name: "Small Satellite Conference",
     startDate: "2026-08-10",
     endDate: "2026-08-13",
@@ -284,6 +304,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-020",
+    registrationCost: 1450,
     name: "Intelligence & National Security Summit",
     startDate: "2026-08-18",
     endDate: "2026-08-19",
@@ -298,6 +319,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-021",
+    registrationCost: 1250,
     name: "Air, Space & Cyber Conference",
     startDate: "2026-09-14",
     endDate: "2026-09-16",
@@ -312,6 +334,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-022",
+    registrationCost: 850,
     name: "Modern Warfare Week",
     startDate: "2026-09-21",
     endDate: "2026-09-24",
@@ -326,6 +349,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-023",
+    registrationCost: 675,
     name: "National Defense Industrial Association Fall Forum",
     startDate: "2026-09-28",
     endDate: "2026-09-30",
@@ -340,6 +364,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-024",
+    registrationCost: 0,
     name: "DoD Digital Engineering Symposium",
     startDate: "2026-01-20",
     endDate: "2026-01-22",
@@ -354,6 +379,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-025",
+    registrationCost: 895,
     name: "AFCEA Rocky Mountain Cyberspace Symposium",
     startDate: "2026-02-23",
     endDate: "2026-02-25",
@@ -368,6 +394,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-026",
+    registrationCost: 0,
     name: "Intelligence Support to Warfighters Forum",
     startDate: "2026-01-28",
     endDate: "2026-01-30",
@@ -382,6 +409,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-027",
+    registrationCost: 595,
     name: "Federal Cloud & Data Summit",
     startDate: "2026-03-23",
     endDate: "2026-03-24",
@@ -396,6 +424,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-028",
+    registrationCost: 1025,
     name: "Defense Health Information Technology Symposium",
     startDate: "2026-08-31",
     endDate: "2026-09-03",
@@ -410,6 +439,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-029",
+    registrationCost: 975,
     name: "Space Force Association Annual Conference",
     startDate: "2026-04-14",
     endDate: "2026-04-16",
@@ -424,6 +454,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-030",
+    registrationCost: 1150,
     name: "National Security Space Association Symposium",
     startDate: "2026-06-15",
     endDate: "2026-06-17",
@@ -438,6 +469,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-031",
+    registrationCost: 1395,
     name: "Aerospace Industries Association Annual Forum",
     startDate: "2026-05-20",
     endDate: "2026-05-22",
@@ -452,6 +484,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-032",
+    registrationCost: 2495,
     name: "Space Foundation Space Symposium",
     startDate: "2026-04-06",
     endDate: "2026-04-09",
@@ -466,6 +499,7 @@ export const events: Event[] = [
   },
   {
     id: "evt-033",
+    registrationCost: 1050,
     name: "DoDIIS Worldwide Conference - West",
     startDate: "2026-08-24",
     endDate: "2026-08-26",

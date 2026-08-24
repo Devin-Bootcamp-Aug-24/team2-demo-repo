@@ -20,7 +20,13 @@ import {
 
 type View = "quarter" | "month" | "week";
 type Filters = { customer: string; association: string; owner: string; status: string; search: string };
-type IconName = "calendar" | "search" | "chevron" | "plus" | "filter" | "location" | "users" | "close" | "arrow";
+type IconName = "calendar" | "search" | "chevron" | "plus" | "filter" | "location" | "users" | "close" | "arrow" | "cost";
+
+function formatRegistrationCost(cost?: number) {
+  if (cost === undefined) return "Cost TBD";
+  if (cost === 0) return "Free";
+  return cost.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+}
 
 const initialFilters: Filters = { customer: "All customers", association: "All associations", owner: "All owners", status: "All statuses", search: "" };
 const customerOptions = (items: Event[]) => Array.from(new Set(items.flatMap((event) => [event.sponsoringCustomer, event.organizingCustomer, ...event.attendingCustomers]))).sort();
@@ -38,6 +44,7 @@ function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
   if (name === "users") return <svg {...common}><path d="M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20M10 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM16 4.3a3.5 3.5 0 0 1 0 6.5M20 20v-1.5a3.5 3.5 0 0 0-2.4-3.3" /></svg>;
   if (name === "close") return <svg {...common}><path d="m6 6 12 12M18 6 6 18" /></svg>;
   if (name === "arrow") return <svg {...common}><path d="M5 12h14M13 6l6 6-6 6" /></svg>;
+  if (name === "cost") return <svg {...common}><path d="M12 3v18M16 7.5c0-1.7-1.8-2.5-4-2.5s-4 .9-4 2.6c0 3.7 8 1.9 8 5.6 0 1.7-1.8 2.6-4 2.6s-4-.9-4-2.6" /></svg>;
   return null;
 }
 
@@ -50,6 +57,7 @@ function EventMeta({ event }: { event: Event }) {
     <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#6e7c8b]">
       <span className="inline-flex items-center gap-1"><Icon name="location" size={12} />{event.location.city}, {event.location.state}</span>
       <span className="inline-flex items-center gap-1"><Icon name="users" size={12} />{event.attendingCustomers.length} attending</span>
+      <span className="inline-flex items-center gap-1"><Icon name="cost" size={12} />{formatRegistrationCost(event.registrationCost)}</span>
     </div>
   );
 }
@@ -171,7 +179,7 @@ function WeekView({ anchor, items }: { anchor: string; items: Event[] }) {
           const endIndex = Math.min(6, days.indexOf(event.endDate) >= 0 ? days.indexOf(event.endDate) : 6);
           return (
             <div key={event.id} className="grid min-h-[120px] grid-cols-[230px_repeat(7,minmax(90px,1fr))] border-b border-[#edf0f3] last:border-0">
-              <div className="p-4"><div className="flex items-start gap-2"><span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: associationColors[event.organizingAssociation] ?? "#63768a" }} /><div><p className="text-xs font-bold leading-snug text-[#1c2a39]">{event.name}</p><p className="mt-1 text-[10px] font-semibold text-[#8793a0]">{event.organizingAssociation} · {event.status}</p><p className="mt-2 text-[10px] leading-relaxed text-[#708292]"><strong>{formatDateRange(event.startDate, event.endDate, true)}</strong><br />{event.location.city}, {event.location.state}{event.location.venue ? ` · ${event.location.venue}` : ""}<br />Sponsor: {event.sponsoringCustomer}<br />Organizer: {event.organizingCustomer}<br />Owner: {event.managedBy}<br />Attending: {event.attendingCustomers.join(", ")}<br />{event.notes}</p></div></div></div>
+              <div className="p-4"><div className="flex items-start gap-2"><span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: associationColors[event.organizingAssociation] ?? "#63768a" }} /><div><p className="text-xs font-bold leading-snug text-[#1c2a39]">{event.name}</p><p className="mt-1 text-[10px] font-semibold text-[#8793a0]">{event.organizingAssociation} · {event.status}</p><p className="mt-2 text-[10px] leading-relaxed text-[#708292]"><strong>{formatDateRange(event.startDate, event.endDate, true)}</strong><br />{event.location.city}, {event.location.state}{event.location.venue ? ` · ${event.location.venue}` : ""}<br />Sponsor: {event.sponsoringCustomer}<br />Organizer: {event.organizingCustomer}<br />Owner: {event.managedBy}<br />Registration: {formatRegistrationCost(event.registrationCost)}<br />Attending: {event.attendingCustomers.join(", ")}<br />{event.notes}</p></div></div></div>
               {days.map((day, index) => <div key={day} className={`border-l border-[#edf0f3] ${index >= startIndex && index <= endIndex ? "bg-[#f2fbfa]" : ""}`} />)}
             </div>
           );
@@ -188,14 +196,15 @@ function AddEventModal({ onClose, onAdd }: { onClose: () => void; onAdd: (event:
   const [status, setStatus] = useState<EventStatus>("Tentative");
   const [association, setAssociation] = useState("AFCEA");
   const [location, setLocation] = useState("Washington, DC");
+  const [registrationCost, setRegistrationCost] = useState("");
   const submit = (formEvent: React.FormEvent) => {
     formEvent.preventDefault();
     if (!name.trim()) return;
     const [city, state = ""] = location.split(",").map((value) => value.trim());
-    onAdd({ id: `demo-${Date.now()}`, name, startDate, endDate, status, organizingAssociation: association, location: { city, state }, sponsoringCustomer: "Department of Defense CIO", organizingCustomer: "Department of Defense CIO", managedBy: "Demo owner", attendingCustomers: ["Department of Defense CIO"], notes: "Added in-memory during this demo session." });
+    onAdd({ id: `demo-${Date.now()}`, name, startDate, endDate, status, organizingAssociation: association, location: { city, state }, sponsoringCustomer: "Department of Defense CIO", organizingCustomer: "Department of Defense CIO", managedBy: "Demo owner", attendingCustomers: ["Department of Defense CIO"], registrationCost: registrationCost.trim() === "" ? undefined : Number(registrationCost), notes: "Added in-memory during this demo session." });
     onClose();
   };
-  return <div className="fixed inset-0 z-20 flex items-center justify-center bg-[#081b31]/50 p-4"><form onSubmit={submit} className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl"><div className="mb-5 flex items-start justify-between"><div><p className="eyebrow text-[#159a9c]">Demo only</p><h2 className="display-font mt-1 text-2xl font-bold">Add an event</h2><p className="mt-1 text-xs text-[#7b8996]">This event lives in memory and resets on refresh.</p></div><button type="button" onClick={onClose} className="rounded-lg p-2 text-[#7b8996] hover:bg-[#f1f4f6]"><Icon name="close" /></button></div><div className="grid gap-4 sm:grid-cols-2"><label className="sm:col-span-2"><span className="label">Event name</span><input required value={name} onChange={(e) => setName(e.target.value)} className="field" placeholder="Mission event name" /></label><label><span className="label">Start date</span><input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="field" /></label><label><span className="label">End date</span><input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="field" /></label><label><span className="label">Association</span><select value={association} onChange={(e) => setAssociation(e.target.value)} className="field">{associationOptions(seedEvents).map((value) => <option key={value}>{value}</option>)}</select></label><label><span className="label">Status</span><select value={status} onChange={(e) => setStatus(e.target.value as EventStatus)} className="field"><option>Confirmed</option><option>Tentative</option><option>Declined</option></select></label><label className="sm:col-span-2"><span className="label">Location</span><input value={location} onChange={(e) => setLocation(e.target.value)} className="field" placeholder="City, ST" /></label></div><div className="mt-6 flex justify-end gap-2"><button type="button" onClick={onClose} className="rounded-lg px-4 py-2 text-sm font-bold text-[#647585] hover:bg-[#f1f4f6]">Cancel</button><button className="rounded-lg bg-[#0b1f3a] px-4 py-2 text-sm font-bold text-white hover:bg-[#193756]">Add event</button></div></form></div>;
+  return <div className="fixed inset-0 z-20 flex items-center justify-center bg-[#081b31]/50 p-4"><form onSubmit={submit} className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl"><div className="mb-5 flex items-start justify-between"><div><p className="eyebrow text-[#159a9c]">Demo only</p><h2 className="display-font mt-1 text-2xl font-bold">Add an event</h2><p className="mt-1 text-xs text-[#7b8996]">This event lives in memory and resets on refresh.</p></div><button type="button" onClick={onClose} className="rounded-lg p-2 text-[#7b8996] hover:bg-[#f1f4f6]"><Icon name="close" /></button></div><div className="grid gap-4 sm:grid-cols-2"><label className="sm:col-span-2"><span className="label">Event name</span><input required value={name} onChange={(e) => setName(e.target.value)} className="field" placeholder="Mission event name" /></label><label><span className="label">Start date</span><input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="field" /></label><label><span className="label">End date</span><input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="field" /></label><label><span className="label">Association</span><select value={association} onChange={(e) => setAssociation(e.target.value)} className="field">{associationOptions(seedEvents).map((value) => <option key={value}>{value}</option>)}</select></label><label><span className="label">Status</span><select value={status} onChange={(e) => setStatus(e.target.value as EventStatus)} className="field"><option>Confirmed</option><option>Tentative</option><option>Declined</option></select></label><label><span className="label">Location</span><input value={location} onChange={(e) => setLocation(e.target.value)} className="field" placeholder="City, ST" /></label><label><span className="label">Registration cost (USD)</span><input type="number" min="0" step="1" value={registrationCost} onChange={(e) => setRegistrationCost(e.target.value)} className="field" placeholder="e.g. 1250" /></label></div><div className="mt-6 flex justify-end gap-2"><button type="button" onClick={onClose} className="rounded-lg px-4 py-2 text-sm font-bold text-[#647585] hover:bg-[#f1f4f6]">Cancel</button><button className="rounded-lg bg-[#0b1f3a] px-4 py-2 text-sm font-bold text-white hover:bg-[#193756]">Add event</button></div></form></div>;
 }
 
 export default function EventTracker({ initialEvents }: { initialEvents: Event[] }) {
