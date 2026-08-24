@@ -511,6 +511,34 @@ export const events: Event[] = [
     attendingCustomers: ["DIA", "NSA", "NGA", "U.S. Space Force"],
     status: "Tentative",
     notes: "Defense Intelligence Information Systems worldwide conference for intelligence community IT."
+  },
+  {
+    id: "evt-034",
+    name: "Mitchell Institute Aerospace Nation: Gen. Kevin B. Schneider",
+    startDate: "2026-07-27",
+    endDate: "2026-07-27",
+    location: { city: "Arlington", state: "VA" },
+    organizingAssociation: "Mitchell Institute",
+    sponsoringCustomer: "U.S. Air Force",
+    organizingCustomer: "Pacific Air Forces",
+    managedBy: "Maya Chen",
+    attendingCustomers: ["U.S. Air Force", "Pacific Air Forces", "U.S. Indo-Pacific Command"],
+    status: "Confirmed",
+    notes: "Mitchell Institute is tracked separately as an affiliate of the Air & Space Forces Association."
+  },
+  {
+    id: "evt-035",
+    name: "Reagan National Defense Forum (RNDF)",
+    startDate: "2025-12-06",
+    endDate: "2025-12-06",
+    location: { city: "Simi Valley", state: "CA", venue: "Ronald Reagan Presidential Library" },
+    organizingAssociation: "Reagan Foundation",
+    sponsoringCustomer: "Office of the Secretary of Defense",
+    organizingCustomer: "Ronald Reagan Presidential Foundation & Institute",
+    managedBy: "Evan Brooks",
+    attendingCustomers: ["Office of the Secretary of Defense", "U.S. Army", "U.S. Navy", "U.S. Air Force"],
+    status: "Confirmed",
+    notes: "Annual bipartisan national defense forum, typically held in December."
   }
 ];
 
@@ -530,5 +558,7 @@ export const associationColors: Record<string, string> = {
   NSSA: "#2a5f8f",
   AIA: "#4a6fa5",
   "Space Foundation": "#5c7aa0",
-  DoDIIS: "#3d6b9e"
+  DoDIIS: "#3d6b9e",
+  "Mitchell Institute": "#315f83",
+  "Reagan Foundation": "#8a2f36"
 };
