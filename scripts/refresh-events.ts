@@ -1,8 +1,9 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { sourceRegistry, type SourceRegistryEntry } from "../data/source-registry";
 import { eventAssignments } from "../data/event-assignments";
-import { extractLocation, parseEventDate } from "../lib/event-parser";
+import { extractLocation, parseEventDate, type ParsedEventDate } from "../lib/event-parser";
 import type { GeneratedEventRecord, SourceStatus } from "../data/generated-event-types";
 import WebSocket from "ws";
 
@@ -54,20 +55,43 @@ function sendCdp(ws: WebSocket, method: string, params: Record<string, unknown> 
 
 async function fetchInBrowser(url: string): Promise<string> {
   const targets = await fetch("http://localhost:29229/json/list").then((response) => response.json()) as Array<{ type: string; webSocketDebuggerUrl?: string }>;
-  const target = targets.find((item) => item.type === "page" && item.webSocketDebuggerUrl);
-  if (!target?.webSocketDebuggerUrl) throw new Error("No existing Chrome page available at CDP endpoint");
-  const ws = new WebSocket(target.webSocketDebuggerUrl);
+  const controllerTarget = targets.find((item) => item.type === "page" && item.webSocketDebuggerUrl);
+  if (!controllerTarget?.webSocketDebuggerUrl) throw new Error("No existing Chrome page available at CDP endpoint");
+  const controller = new WebSocket(controllerTarget.webSocketDebuggerUrl);
   await new Promise<void>((resolve, reject) => {
-    ws.once("open", resolve);
-    ws.once("error", reject);
+    controller.once("open", resolve);
+    controller.once("error", reject);
   });
-  await sendCdp(ws, "Page.navigate", { url });
-  await new Promise((resolve) => setTimeout(resolve, 4_000));
-  const result = await sendCdp(ws, "Runtime.evaluate", { expression: "document.body.innerText", returnByValue: true });
-  ws.close();
-  const value = (result.result as { result?: { value?: unknown } } | undefined)?.result?.value;
-  if (typeof value !== "string" || !value.trim()) throw new Error("Browser returned an empty page");
-  return value.replace(/\s+/g, " ").trim();
+
+  let targetId: string | undefined;
+  let ws: WebSocket | undefined;
+  try {
+    const created = await sendCdp(controller, "Target.createTarget", { url: "about:blank" });
+    targetId = (created.result as { targetId?: string } | undefined)?.targetId;
+    if (!targetId) throw new Error("Chrome did not return a target id for the refresh tab");
+    let tab: { webSocketDebuggerUrl?: string } | undefined;
+    for (let attempt = 0; attempt < 20 && !tab?.webSocketDebuggerUrl; attempt += 1) {
+      const currentTargets = await fetch("http://localhost:29229/json/list").then((response) => response.json()) as Array<{ id?: string; type: string; webSocketDebuggerUrl?: string }>;
+      tab = currentTargets.find((item) => item.id === targetId && item.type === "page");
+      if (!tab?.webSocketDebuggerUrl) await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    if (!tab?.webSocketDebuggerUrl) throw new Error("Chrome refresh tab did not become available");
+    ws = new WebSocket(tab.webSocketDebuggerUrl);
+    await new Promise<void>((resolve, reject) => {
+      ws?.once("open", resolve);
+      ws?.once("error", reject);
+    });
+    await sendCdp(ws, "Page.navigate", { url });
+    await new Promise((resolve) => setTimeout(resolve, 4_000));
+    const result = await sendCdp(ws, "Runtime.evaluate", { expression: "document.body.innerText", returnByValue: true });
+    const value = (result.result as { result?: { value?: unknown } } | undefined)?.result?.value;
+    if (typeof value !== "string" || !value.trim()) throw new Error("Browser returned an empty page");
+    return value.replace(/\s+/g, " ").trim();
+  } finally {
+    ws?.close();
+    if (targetId) await sendCdp(controller, "Target.closeTarget", { targetId });
+    controller.close();
+  }
 }
 
 function loadPrevious(): PreviousRecord[] {
@@ -90,9 +114,14 @@ function hasUsableDates(record: PreviousRecord | undefined): record is PreviousR
   return Boolean(record?.sourceStatus === "confirmed" && record.startDate && record.endDate && /^\d{4}-\d{2}-\d{2}$/.test(record.startDate) && /^\d{4}-\d{2}-\d{2}$/.test(record.endDate));
 }
 
-function recordFor(entry: SourceRegistryEntry, previous: PreviousRecord | undefined, now: string, text: string, status: SourceStatus, error?: string): GeneratedEventRecord {
-  const parsed = status === "confirmed" ? parseEventDate(text, entry.editionYear) : null;
-  const assignment = eventAssignments[entry.id] ?? eventAssignments["dodiis-worldwide"];
+function assignmentFor(entry: SourceRegistryEntry): typeof eventAssignments[string] {
+  const assignment = eventAssignments[entry.id];
+  if (!assignment) throw new Error(`Missing internal assignment for source registry id "${entry.id}"`);
+  return assignment;
+}
+
+export function recordFor(entry: SourceRegistryEntry, previous: PreviousRecord | undefined, now: string, text: string, status: SourceStatus, parsed: ParsedEventDate | null, error?: string): GeneratedEventRecord {
+  const assignment = assignmentFor(entry);
   if (parsed) {
     return {
       ...entryToRecord(entry, assignment),
@@ -102,8 +131,7 @@ function recordFor(entry: SourceRegistryEntry, previous: PreviousRecord | undefi
       sourceUrl: entry.sourceUrl,
       sourceSnippet: parsed.snippet,
       verifiedAt: now,
-      sourceStatus: "confirmed",
-      status: "Confirmed"
+      sourceStatus: "confirmed"
     };
   }
   if (hasUsableDates(previous)) {
@@ -115,7 +143,6 @@ function recordFor(entry: SourceRegistryEntry, previous: PreviousRecord | undefi
     sourceSnippet: null,
     verifiedAt: null,
     sourceStatus: status,
-    status: "Tentative",
     refreshError: error
   };
 }
@@ -132,9 +159,12 @@ function entryToRecord(entry: SourceRegistryEntry, assignment: typeof eventAssig
     sourceUrl: entry.sourceUrl,
     sourceSnippet: null,
     verifiedAt: null,
-    sourceStatus: "not-announced",
-    status: "Tentative"
+    sourceStatus: "not-announced"
   };
+}
+
+export function refreshExitCode(failures: number): number {
+  return failures ? 1 : 0;
 }
 
 async function main() {
@@ -147,12 +177,13 @@ async function main() {
     let text = "";
     let sourceStatus: SourceStatus = "not-announced";
     let error: string | undefined;
+    let parsed: ParsedEventDate | null = null;
     const previousRecord = previous.get(entry.id);
     try {
       text = entry.fetchStrategy === "browser" ? await fetchInBrowser(entry.sourceUrl) : await fetchPlain(entry.sourceUrl);
       const anchorIndex = entry.dateAnchor ? text.lastIndexOf(entry.dateAnchor) : -1;
       const sourceText = anchorIndex >= 0 ? text.slice(anchorIndex) : text;
-      const parsed = entry.parseDates === false ? null : parseEventDate(sourceText, entry.editionYear);
+      parsed = entry.parseDates === false ? null : parseEventDate(sourceText, entry.editionYear);
       sourceStatus = parsed ? "confirmed" : hasUsableDates(previousRecord) ? "fetch-failed" : "not-announced";
       if (!parsed && hasUsableDates(previousRecord)) {
         error = "No target-year date could be parsed; retained the previous confirmed date";
@@ -164,7 +195,7 @@ async function main() {
       error = caught instanceof Error ? caught.message : String(caught);
       if (previous.get(entry.id)?.sourceStatus === "confirmed") failures += 1;
     }
-    const record = recordFor(entry, previous.get(entry.id), now, text, sourceStatus, error);
+    const record = recordFor(entry, previous.get(entry.id), now, text, sourceStatus, parsed, error);
     records.push(record);
     const old = previous.get(entry.id);
     const change = record.startDate !== old?.startDate || record.endDate !== old?.endDate || record.sourceStatus !== old?.sourceStatus ? "changed" : "unchanged";
@@ -175,10 +206,10 @@ async function main() {
   const output = `import type { GeneratedEventRecord } from "./generated-event-types";\n\nexport const generatedEvents: GeneratedEventRecord[] = ${JSON.stringify(records, null, 2)};\n`;
   writeFileSync(generatedPath, output);
   console.log(`\nWrote ${records.length} records to ${generatedPath}`);
-  if (failures) {
+  if (refreshExitCode(failures)) {
     console.error(`${failures} previously confirmed event(s) failed to refresh; retained their last known good dates.`);
     process.exitCode = 1;
   }
 }
 
-void main();
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) void main();

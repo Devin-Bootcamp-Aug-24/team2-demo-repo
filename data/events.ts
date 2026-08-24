@@ -1,7 +1,7 @@
 import { generatedEvents } from "@/data/generated-events";
-import type { SourceStatus } from "@/data/generated-event-types";
+import type { AttendanceStatus, SourceStatus } from "@/data/generated-event-types";
 
-export type EventStatus = "Confirmed" | "Tentative" | "Declined";
+export type EventStatus = AttendanceStatus;
 export type { SourceStatus } from "@/data/generated-event-types";
 
 export type Event = {

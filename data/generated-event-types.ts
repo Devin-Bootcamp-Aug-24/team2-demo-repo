@@ -1,4 +1,5 @@
 export type SourceStatus = "confirmed" | "not-announced" | "fetch-failed";
+export type AttendanceStatus = "Confirmed" | "Tentative" | "Declined";
 
 export type GeneratedEventRecord = {
   id: string;
@@ -11,7 +12,7 @@ export type GeneratedEventRecord = {
   organizingCustomer: string;
   managedBy: string;
   attendingCustomers: string[];
-  status: "Confirmed" | "Tentative" | "Declined";
+  status: AttendanceStatus;
   notes: string;
   sourceUrl: string;
   sourceSnippet: string | null;
