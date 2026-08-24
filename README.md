@@ -15,9 +15,10 @@ status, and free-text filters available in every view.
 - Fiscal-quarter/calendar-quarter toggle, previous/next cursor, shared filters, and
   an in-memory **Add event** demo action.
 
-The sample events and customer/owner assignments are illustrative sample data, not
-verified schedules. Names are based on real federal conference formats where
-appropriate; assignments, dates, and attendance are fabricated for demonstration.
+Event names, dates, and locations in the generated records are collected from
+official organizer or event-microsite pages. Internal customer, owner, attendee,
+status, and notes assignments are demo values; they are not claims published by
+the event organizers.
 
 ## Run locally
 
@@ -40,17 +41,40 @@ npm run build
 
 Each event has:
 
-`id`, `name`, `startDate`, `endDate`, `location` (city/state and optional venue),
-`organizingAssociation`, `sponsoringCustomer`, `organizingCustomer`, `managedBy`,
-`attendingCustomers`, `status` (`Confirmed`, `Tentative`, or `Declined`), and `notes`.
+`id`, `name`, `startDate`, `endDate`, `location` (city/state, optional venue, or
+display text), `organizingAssociation`, `sponsoringCustomer`,
+`organizingCustomer`, `managedBy`, `attendingCustomers`, `status` (`Confirmed`,
+`Tentative`, or `Declined`), and `notes`. Source metadata includes `sourceUrl`,
+`sourceSnippet`, `verifiedAt`, and `sourceStatus`. `startDate` and `endDate` are
+null for events whose dates are not announced.
 
 Lookup options for filters are derived from the event records at runtime. The
 Add event control adds a record to React state only; it is intentionally not
 persisted.
 
-## Seed data and date math
+## Sourced data and refresh workflow
 
-- Seed records live in [`data/events.ts`](./data/events.ts).
+- The source registry lives in [`data/source-registry.ts`](./data/source-registry.ts).
+- The committed generated records live in
+  [`data/generated-events.ts`](./data/generated-events.ts), and the UI-facing
+  mapping is in [`data/events.ts`](./data/events.ts).
+- Run `npm run refresh:events` to fetch every official source and regenerate the
+  records. The intended production use is a weekly scheduled refresh.
+- Every confirmed record stores its source URL, the raw date snippet, and a
+  `verifiedAt` timestamp. Events without an announced date remain in the
+  **Dates TBA** tray and never appear on a calendar grid.
+- Fetch and parse failures are distinct from an organizer not announcing a date.
+  A failure never replaces a previously confirmed date; the last known good date,
+  snippet, and verification timestamp are retained, and the refresh exits
+  non-zero when a previously confirmed record cannot be refreshed.
+- Plain HTTP is used by default. Sources marked `browser` use the existing
+  Chrome DevTools Protocol endpoint at `http://localhost:29229`; the refresh
+  script attaches to that browser and does not launch Chrome.
+- The application follows a no-invented-date policy: no fallback or guessed
+  conference dates are written.
+
+## Date math
+
 - Fiscal quarter and week-boundary calculations live in
   [`lib/calendar.ts`](./lib/calendar.ts); FY starts on October 1.
 - Date-overlap tests live in [`lib/calendar.test.ts`](./lib/calendar.test.ts).
