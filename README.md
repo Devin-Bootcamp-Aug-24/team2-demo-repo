@@ -42,7 +42,9 @@ Each event has:
 
 `id`, `name`, `startDate`, `endDate`, `location` (city/state and optional venue),
 `organizingAssociation`, `sponsoringCustomer`, `organizingCustomer`, `managedBy`,
-`attendingCustomers`, `status` (`Confirmed`, `Tentative`, or `Declined`), and `notes`.
+`attendingCustomers`, `status` (`Confirmed`, `Tentative`, or `Declined`), `notes`, and
+`registrationCost` (whole USD industry-attendee registration price; `0` renders as
+"Free" and an omitted value renders as "Cost TBD").
 
 Lookup options for filters are derived from the event records at runtime. The
 Add event control adds a record to React state only; it is intentionally not
