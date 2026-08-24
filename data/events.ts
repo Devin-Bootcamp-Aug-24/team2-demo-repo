@@ -50,7 +50,7 @@ export const events: Event[] = [
     startDate: "2025-11-17",
     endDate: "2025-11-19",
     location: { city: "Phoenix", state: "AZ", venue: "Phoenix Convention Center" },
-    organizingAssociation: "AFCEA",
+    organizingAssociation: "DoDIIS",
     sponsoringCustomer: "DIA",
     organizingCustomer: "Defense Intelligence Agency",
     managedBy: "Priya Shah",
@@ -407,6 +407,76 @@ export const events: Event[] = [
     attendingCustomers: ["Defense Health Agency", "U.S. Army", "U.S. Navy"],
     status: "Confirmed",
     notes: "This event intentionally crosses the August/September boundary."
+  },
+  {
+    id: "evt-029",
+    name: "Space Force Association Annual Conference",
+    startDate: "2026-04-14",
+    endDate: "2026-04-16",
+    location: { city: "Colorado Springs", state: "CO", venue: "The Broadmoor" },
+    organizingAssociation: "SFA",
+    sponsoringCustomer: "U.S. Space Force",
+    organizingCustomer: "U.S. Space Force",
+    managedBy: "Maya Chen",
+    attendingCustomers: ["U.S. Space Force", "U.S. Northern Command", "NORAD"],
+    status: "Confirmed",
+    notes: "Space Force Association's premier annual event for space operations and strategy."
+  },
+  {
+    id: "evt-030",
+    name: "National Security Space Association Symposium",
+    startDate: "2026-06-15",
+    endDate: "2026-06-17",
+    location: { city: "Arlington", state: "VA", venue: "Renaissance Arlington Capital View" },
+    organizingAssociation: "NSSA",
+    sponsoringCustomer: "U.S. Space Force",
+    organizingCustomer: "National Reconnaissance Office",
+    managedBy: "Jordan Lewis",
+    attendingCustomers: ["U.S. Space Force", "NRO", "NGA"],
+    status: "Tentative",
+    notes: "National security space policy and industry collaboration forum."
+  },
+  {
+    id: "evt-031",
+    name: "Aerospace Industries Association Annual Forum",
+    startDate: "2026-05-20",
+    endDate: "2026-05-22",
+    location: { city: "Washington", state: "DC", venue: "The Ritz-Carlton" },
+    organizingAssociation: "AIA",
+    sponsoringCustomer: "Office of the Secretary of Defense",
+    organizingCustomer: "Department of the Air Force",
+    managedBy: "Priya Shah",
+    attendingCustomers: ["Office of the Secretary of Defense", "U.S. Air Force", "U.S. Space Force"],
+    status: "Confirmed",
+    notes: "Aerospace industry leadership and defense policy discussions."
+  },
+  {
+    id: "evt-032",
+    name: "Space Foundation Space Symposium",
+    startDate: "2026-04-06",
+    endDate: "2026-04-09",
+    location: { city: "Colorado Springs", state: "CO", venue: "The Broadmoor" },
+    organizingAssociation: "Space Foundation",
+    sponsoringCustomer: "U.S. Space Force",
+    organizingCustomer: "U.S. Space Force",
+    managedBy: "Maya Chen",
+    attendingCustomers: ["U.S. Space Force", "NASA", "Commercial Space Companies"],
+    status: "Confirmed",
+    notes: "Premier space industry conference connecting civil, commercial, and national security space."
+  },
+  {
+    id: "evt-033",
+    name: "DoDIIS Worldwide Conference - West",
+    startDate: "2026-08-24",
+    endDate: "2026-08-26",
+    location: { city: "Omaha", state: "NE", venue: "CHI Health Center Omaha" },
+    organizingAssociation: "DoDIIS",
+    sponsoringCustomer: "DIA",
+    organizingCustomer: "Defense Intelligence Agency",
+    managedBy: "Priya Shah",
+    attendingCustomers: ["DIA", "NSA", "NGA", "U.S. Space Force"],
+    status: "Tentative",
+    notes: "Defense Intelligence Information Systems worldwide conference for intelligence community IT."
   }
 ];
 
@@ -421,5 +491,10 @@ export const associationColors: Record<string, string> = {
   AAAA: "#697c3d",
   USSOCOM: "#8b5e3c",
   MCAA: "#a55570",
-  "USSF Association": "#395b8e"
+  "USSF Association": "#395b8e",
+  SFA: "#1e4d8c",
+  NSSA: "#2a5f8f",
+  AIA: "#4a6fa5",
+  "Space Foundation": "#5c7aa0",
+  DoDIIS: "#3d6b9e"
 };
