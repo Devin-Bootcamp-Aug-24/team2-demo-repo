@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { eventOccursInMonth, fiscalYearForDate, quartersForYear, startOfWeek } from "./calendar";
+import { addYears, eventOccursInMonth, fiscalYearForDate, quartersForYear, startOfWeek } from "./calendar";
 
 describe("calendar periods", () => {
   it("starts FY26 in October 2025 and maps quarters correctly", () => {
@@ -16,5 +16,10 @@ describe("calendar periods", () => {
 
   it("uses Sunday as the week boundary", () => {
     expect(startOfWeek("2026-05-13")).toBe("2026-05-10");
+  });
+
+  it("moves a cursor by exactly one calendar year", () => {
+    expect(addYears("2026-05-04", 1)).toBe("2027-05-04");
+    expect(addYears("2026-05-04", -1)).toBe("2025-05-04");
   });
 });

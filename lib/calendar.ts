@@ -20,6 +20,12 @@ export function addDays(value: string | Date, amount: number): string {
   return dateKey(date);
 }
 
+export function addYears(value: string | Date, amount: number): string {
+  const date = typeof value === "string" ? parseDate(value) : new Date(value);
+  date.setFullYear(date.getFullYear() + amount);
+  return dateKey(date);
+}
+
 export function startOfWeek(value: string): string {
   const date = parseDate(value);
   date.setDate(date.getDate() - date.getDay());
@@ -66,8 +72,8 @@ export function quartersForYear(year: number, fiscal: boolean): Quarter[] {
     return {
       start: dateKey(startDate),
       end: dateKey(endDate),
-      label: fiscal ? `Q${index + 1}` : `Q${index + 1}`,
-      shortLabel: fiscal ? `Q${index + 1}` : `Q${index + 1}`,
+      label: `Q${index + 1}`,
+      shortLabel: `Q${index + 1}`,
       months
     };
   });

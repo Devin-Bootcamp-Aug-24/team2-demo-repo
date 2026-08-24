@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { associationColors, events as seedEvents, type Event, type EventStatus } from "@/data/events";
 import {
   addDays,
+  addYears,
   endOfWeek,
   eventOccursInMonth,
   eventOccursInWeek,
@@ -129,13 +130,15 @@ function MonthView({ anchor, items, onDrill }: { anchor: string; items: Event[];
           const days = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
           const weekEvents = items.filter((event) => eventOccursInWeek(event, weekStart));
           return (
-            <button key={weekStart} onClick={() => onDrill(weekStart)} className="group grid min-h-[108px] w-full grid-cols-7 text-left transition hover:bg-[#fbfdfd]">
-              {days.map((day, index) => {
-                const dayDate = parseDate(day);
-                const inMonth = dayDate.getMonth() === month;
-                return <div key={day} className={`border-r border-[#edf0f3] p-2 last:border-0 ${index === 0 ? "border-l-2 border-l-transparent group-hover:border-l-[#12b8b0]" : ""}`}><span className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${inMonth ? "text-[#455565]" : "text-[#bec7cf]"}`}>{dayDate.getDate()}</span></div>;
-              })}
-              <div className="pointer-events-none col-span-7 row-start-1 grid grid-cols-7 gap-1 px-2 pb-2 pt-9">
+            <button key={weekStart} onClick={() => onDrill(weekStart)} className="group block min-h-[128px] w-full text-left transition hover:bg-[#fbfdfd]">
+              <div className="grid grid-cols-7 text-left">
+                {days.map((day, index) => {
+                  const dayDate = parseDate(day);
+                  const inMonth = dayDate.getMonth() === month;
+                  return <div key={day} className={`border-r border-[#edf0f3] p-2 last:border-0 ${index === 0 ? "border-l-2 border-l-transparent group-hover:border-l-[#12b8b0]" : ""}`}><span className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${inMonth ? "text-[#455565]" : "text-[#bec7cf]"}`}>{dayDate.getDate()}</span></div>;
+                })}
+              </div>
+              <div className="grid min-h-[76px] grid-cols-7 gap-1 px-2 pb-2 pt-2">
                 {weekEvents.slice(0, 4).map((event) => {
                   const startOffset = event.startDate < weekStart ? 0 : parseDate(event.startDate).getDay();
                   const endOffset = event.endDate > addDays(weekStart, 6) ? 6 : parseDate(event.endDate).getDay();
@@ -212,13 +215,13 @@ export default function EventTracker() {
     const search = filters.search.toLowerCase();
     const textMatch = !search || [event.name, event.notes, event.location.city, event.location.state, event.organizingAssociation, ...event.attendingCustomers].join(" ").toLowerCase().includes(search);
     return customerMatch && associationMatch && ownerMatch && statusMatch && textMatch;
-  }), [filters, items]);
+  }).sort((left, right) => left.startDate.localeCompare(right.startDate) || left.name.localeCompare(right.name)), [filters, items]);
   const options = { customers: customerOptions(items), associations: associationOptions(items), owners: ownerOptions(items) };
   const cursorYear = fiscal ? fiscalYearForDate(anchor) : date.getFullYear();
   const title = view === "quarter" ? `${fiscal ? "FY" : ""}${cursorYear}` : monthLabel(anchor);
   const breadcrumb = view === "quarter" ? `${fiscal ? "FY" : "Calendar"}${cursorYear}` : view === "month" ? `${fiscal ? `FY${cursorYear} › ` : ""}${monthLabel(anchor)}` : `${fiscal ? `FY${cursorYear} › ` : ""}${monthLabel(anchor)} › ${formatDateRange(startOfWeek(anchor), endOfWeek(anchor))}`;
   const goCursor = (direction: number) => {
-    if (view === "quarter") setAnchor(addDays(anchor, direction * (fiscal ? 365 : 366)));
+    if (view === "quarter") setAnchor(addYears(anchor, direction));
     if (view === "month") setAnchor(`${date.getFullYear()}-${String(date.getMonth() + direction + 1).padStart(2, "0")}-01`);
     if (view === "week") setAnchor(addDays(startOfWeek(anchor), direction * 7));
   };
@@ -242,7 +245,7 @@ export default function EventTracker() {
         {showFilters && <div className="mb-5 rounded-xl border border-[#dce4ea] bg-white p-4 shadow-card"><div className="mb-3 flex items-center justify-between"><p className="text-xs font-bold uppercase tracking-wider text-[#526b7d]">Filter events</p><button onClick={clearFilters} className="text-xs font-bold text-[#159a9c] hover:underline">Clear all</button></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"><label><span className="label">Customer</span><select value={filters.customer} onChange={(e) => setFilters({ ...filters, customer: e.target.value })} className="field">{["All customers", ...options.customers].map((value) => <option key={value}>{value}</option>)}</select></label><label><span className="label">Association</span><select value={filters.association} onChange={(e) => setFilters({ ...filters, association: e.target.value })} className="field">{["All associations", ...options.associations].map((value) => <option key={value}>{value}</option>)}</select></label><label><span className="label">Managed by</span><select value={filters.owner} onChange={(e) => setFilters({ ...filters, owner: e.target.value })} className="field">{["All owners", ...options.owners].map((value) => <option key={value}>{value}</option>)}</select></label><label><span className="label">Status</span><select value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })} className="field"><option>All statuses</option><option>Confirmed</option><option>Tentative</option><option>Declined</option></select></label></div></div>}
         <div className="mb-5 flex flex-wrap items-center justify-between gap-4"><div><div className="flex items-center gap-3"><button onClick={() => goCursor(-1)} className="rounded-lg border border-[#d6dfe6] bg-white p-2 text-[#526b7d] shadow-sm hover:bg-[#f0f5f7]"><span className="sr-only">Previous</span>‹</button><h2 className="display-font min-w-[150px] text-2xl font-bold text-[#17212e]">{title}</h2><button onClick={() => goCursor(1)} className="rounded-lg border border-[#d6dfe6] bg-white p-2 text-[#526b7d] shadow-sm hover:bg-[#f0f5f7]"><span className="sr-only">Next</span>›</button></div><p className="mt-1 text-xs text-[#83909c]">{filteredItems.length} of {items.length} events shown · {view === "quarter" ? "Annual roll-up" : view === "month" ? "Month at a glance" : "Weekly mission detail"}</p></div><div className="relative"><Icon name="search" size={15} /><input aria-label="Search events" value={filters.search} onChange={(e) => setFilters({ ...filters, search: e.target.value })} className="w-64 border-b border-[#cfd9e1] bg-transparent py-2 pl-7 pr-2 text-sm outline-none placeholder:text-[#9ca9b5] focus:border-[#159a9c]" placeholder="Search events..." /></div></div>
         {filteredItems.length === 0 ? <EmptyState /> : view === "quarter" ? <QuarterView year={cursorYear} fiscal={fiscal} items={filteredItems} onDrill={drillMonth} /> : view === "month" ? <MonthView anchor={anchor} items={filteredItems} onDrill={drillWeek} /> : <WeekView anchor={anchor} items={filteredItems} />}
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-[11px] text-[#83909c]"><div><span className="mr-3 font-bold text-[#526b7d]">Association key</span>{Object.entries(associationColors).slice(0, 6).map(([name, color]) => <span key={name} className="mr-3 inline-flex items-center gap-1.5"><i className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />{name}</span>)}</div><p>Data refresh: demo seed · Last updated today</p></div>
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-[11px] text-[#83909c]"><div><span className="mr-3 font-bold text-[#526b7d]">Association key</span>{Array.from(new Set(items.map((event) => event.organizingAssociation))).sort().map((name) => <span key={name} className="mr-3 inline-flex items-center gap-1.5"><i className="h-2 w-2 rounded-full" style={{ backgroundColor: associationColors[name] }} />{name}</span>)}</div><p>Data refresh: demo seed · Last updated today</p></div>
       </div>
       {showAdd && <AddEventModal onClose={() => setShowAdd(false)} onAdd={(event) => setItems((current) => [event, ...current])} />}
     </main>
