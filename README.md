@@ -15,10 +15,11 @@ status, and free-text filters available in every view.
 - Fiscal-quarter/calendar-quarter toggle, previous/next cursor, shared filters, and
   an in-memory **Add event** demo action.
 
-Event names, dates, and locations in the generated records are collected from
-official organizer or event-microsite pages. Internal customer, owner, attendee,
-status, and notes assignments are demo values; they are not claims published by
-the event organizers.
+Event names, dates, and locations in the generated records are sourced from
+official organizer or event-microsite pages. Locations are curated in the source
+registry from the published page text rather than inferred from free-form prose.
+Internal customer, owner, attendee, status, and notes assignments are demo values;
+they are not claims published by the event organizers.
 
 ## Run locally
 
@@ -61,7 +62,9 @@ persisted.
 - Run `npm run refresh:events` to fetch every official source and regenerate the
   records. The intended production use is a weekly scheduled refresh.
 - Every confirmed record stores its source URL, the raw date snippet, and a
-  `verifiedAt` timestamp. Events without an announced date remain in the
+  `verifiedAt` timestamp. Curated locations retain their source text; if a
+  subsequent fetch no longer contains that text, the generated record is marked
+  for location re-verification without rewriting the location. Events without an announced date remain in the
   **Dates TBA** tray and never appear on a calendar grid.
 - Fetch and parse failures are distinct from an organizer not announcing a date.
   A failure never replaces a previously confirmed date; the last known good date,

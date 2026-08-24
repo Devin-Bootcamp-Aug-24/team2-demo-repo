@@ -3,26 +3,10 @@ const months: Record<string, number> = {
   july: 7, august: 8, september: 9, october: 10, november: 11, december: 12
 };
 
-const stateNames: Record<string, string> = {
-  "d.c.": "DC", alabama: "AL", alaska: "AK", arizona: "AZ", arkansas: "AR",
-  california: "CA", colorado: "CO", florida: "FL", georgia: "GA", hawaii: "HI",
-  illinois: "IL", maryland: "MD", massachusetts: "MA", missouri: "MO",
-  nevada: "NV", newyork: "NY", northcarolina: "NC", ohio: "OH", oklahoma: "OK",
-  oregon: "OR", pennsylvania: "PA", tennessee: "TN", texas: "TX", utah: "UT",
-  virginia: "VA", washington: "WA"
-};
-
 export type ParsedEventDate = {
   startDate: string;
   endDate: string;
   snippet: string;
-};
-
-export type ParsedLocation = {
-  city: string;
-  state: string;
-  venue?: string;
-  display?: string;
 };
 
 const monthPattern = "(?:January|February|March|April|May|June|July|August|September|October|November|December)";
@@ -100,33 +84,4 @@ export function parseEventDate(text: string, targetYear: number): ParsedEventDat
   const unique = candidates.filter((candidate, index, all) => all.findIndex((other) => other.startDate === candidate.startDate && other.endDate === candidate.endDate) === index);
   if (!unique.length) return null;
   return unique.sort((left, right) => Number(left.startDate === left.endDate) - Number(right.startDate === right.endDate) || left.index - right.index)[0];
-}
-
-function normalizeState(value: string): string {
-  return stateNames[value.toLowerCase().replace(/\s+/g, "")] ?? value.toUpperCase();
-}
-
-export function extractLocation(text: string, date: ParsedEventDate): ParsedLocation {
-  const dateIndex = text.indexOf(date.snippet);
-  const context = dateIndex >= 0
-    ? text.slice(Math.max(0, dateIndex - 250), dateIndex + date.snippet.length + 350)
-    : date.snippet;
-  if (context.match(/\bVirtual and In-Person Event\b/i)) return { city: "", state: "", display: "Virtual and In-Person Event" };
-  const cityStatePattern = /\b([A-Z][A-Za-z.'-]*(?:\s+[A-Z][A-Za-z.'-]*){0,4}),\s*(D\.C\.|[A-Z]{2}|Alabama|Alaska|Arizona|Arkansas|California|Colorado|Florida|Georgia|Hawaii|Illinois|Maryland|Massachusetts|Missouri|Nevada|New York|North Carolina|Ohio|Oklahoma|Oregon|Pennsylvania|Tennessee|Texas|Utah|Virginia|Washington)\b/gi;
-  const cityStateMatches = Array.from(context.matchAll(cityStatePattern));
-  const abbreviatedState = cityStateMatches.filter((match) => match[2].length <= 3);
-  const cityState = (abbreviatedState.length ? abbreviatedState : cityStateMatches)[(abbreviatedState.length ? abbreviatedState : cityStateMatches).length - 1];
-  if (!cityState) return { city: "", state: "" };
-
-  const precedingState = context.slice(0, cityState.index ?? 0).match(/\b(Alabama|Alaska|Arizona|Arkansas|California|Colorado|Florida|Georgia|Hawaii|Illinois|Maryland|Massachusetts|Missouri|Nevada|New York|North Carolina|Ohio|Oklahoma|Oregon|Pennsylvania|Tennessee|Texas|Utah|Virginia|Washington)\s+$/i);
-  const city = `${precedingState?.[1] ? `${precedingState[1]} ` : ""}${cityState[1].trim()}`;
-  const state = normalizeState(cityState[2]);
-  const beforeCity = context.slice(0, cityState.index ?? 0);
-  const venueContext = precedingState ? beforeCity.slice(0, -precedingState[0].length) : beforeCity;
-  const addressVenue = venueContext.match(/(?:^|,\s*)((?:The )?[A-Z][A-Za-z0-9&.'-]*(?:\s+[A-Z][A-Za-z0-9&.'-]*){1,8})\s+\d{2,5}\s+[^,]+,/);
-  const fragments = venueContext.split(/[,.;]|\bat\b/i).map((fragment) => fragment.trim()).filter(Boolean);
-  const candidate = fragments[fragments.length - 1]?.replace(/^the\s+/i, "").trim();
-  const candidateVenue = candidate?.match(/((?:The\s+)?[A-Z][A-Za-z0-9&.'-]*(?:\s+[A-Z][A-Za-z0-9&.'-]*){0,8}?\s+(?:Convention Center|Convention Centre|Resort|Hotel|Broadmoor|Center|Centre|Hall|Campus|Arena|Exposition|Ritz Carlton))/i)?.[1];
-  const venue = addressVenue?.[1] ?? candidateVenue;
-  return venue ? { city, state, venue: venue.trim() } : { city, state };
 }

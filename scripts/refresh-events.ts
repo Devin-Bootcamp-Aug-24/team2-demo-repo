@@ -1,9 +1,9 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { sourceRegistry, type SourceRegistryEntry } from "../data/source-registry";
+import { sourceRegistry, type CuratedLocation, type SourceRegistryEntry } from "../data/source-registry";
 import { eventAssignments } from "../data/event-assignments";
-import { extractLocation, parseEventDate, type ParsedEventDate } from "../lib/event-parser";
+import { parseEventDate, type ParsedEventDate } from "../lib/event-parser";
 import type { GeneratedEventRecord, SourceStatus } from "../data/generated-event-types";
 import WebSocket from "ws";
 
@@ -120,25 +120,41 @@ function assignmentFor(entry: SourceRegistryEntry): typeof eventAssignments[stri
   return assignment;
 }
 
-export function recordFor(entry: SourceRegistryEntry, previous: PreviousRecord | undefined, now: string, text: string, status: SourceStatus, parsed: ParsedEventDate | null, error?: string): GeneratedEventRecord {
+function recordLocation(location: CuratedLocation | undefined): GeneratedEventRecord["location"] {
+  if (!location) return { city: "", state: "" };
+  const { sourceText: _sourceText, ...record } = location;
+  return record;
+}
+
+function normalizedText(value: string): string {
+  return value.toLowerCase().replace(/[.,/()]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+export function locationMayHaveChanged(text: string, location: CuratedLocation | undefined): boolean {
+  if (!location) return false;
+  const normalizedPage = normalizedText(text);
+  return ![location.sourceText, location.venue].filter(Boolean).some((value) => normalizedPage.includes(normalizedText(value!)));
+}
+
+export function recordFor(entry: SourceRegistryEntry, previous: PreviousRecord | undefined, now: string, text: string, status: SourceStatus, parsed: ParsedEventDate | null, locationDrift?: boolean, error?: string): GeneratedEventRecord {
   const assignment = assignmentFor(entry);
   if (parsed) {
     return {
       ...entryToRecord(entry, assignment),
       startDate: parsed.startDate,
       endDate: parsed.endDate,
-      location: extractLocation(text, parsed),
       sourceUrl: entry.sourceUrl,
       sourceSnippet: parsed.snippet,
       verifiedAt: now,
-      sourceStatus: "confirmed"
+      sourceStatus: "confirmed",
+      locationDrift: locationDrift ?? false
     };
   }
   if (hasUsableDates(previous)) {
-    return { ...previous, sourceUrl: entry.sourceUrl, sourceStatus: status, refreshError: error };
+    return { ...previous, sourceUrl: entry.sourceUrl, sourceStatus: status, locationDrift: locationDrift ?? previous.locationDrift, refreshError: error };
   }
   return {
-    ...entryToRecord(entry, assignment),
+    ...entryToRecord(entry, assignment, locationDrift),
     sourceUrl: entry.sourceUrl,
     sourceSnippet: null,
     verifiedAt: null,
@@ -147,13 +163,15 @@ export function recordFor(entry: SourceRegistryEntry, previous: PreviousRecord |
   };
 }
 
-function entryToRecord(entry: SourceRegistryEntry, assignment: typeof eventAssignments[string]): GeneratedEventRecord {
+function entryToRecord(entry: SourceRegistryEntry, assignment: typeof eventAssignments[string], locationDrift = false): GeneratedEventRecord {
   return {
     id: entry.id,
     name: entry.name,
     startDate: null,
     endDate: null,
-    location: { city: "", state: "" },
+    location: recordLocation(entry.location),
+    locationSourceText: entry.location?.sourceText ?? null,
+    locationDrift,
     organizingAssociation: entry.association,
     ...assignment,
     sourceUrl: entry.sourceUrl,
@@ -178,12 +196,14 @@ async function main() {
     let sourceStatus: SourceStatus = "not-announced";
     let error: string | undefined;
     let parsed: ParsedEventDate | null = null;
+    let locationDrift: boolean | undefined;
     const previousRecord = previous.get(entry.id);
     try {
       text = entry.fetchStrategy === "browser" ? await fetchInBrowser(entry.sourceUrl) : await fetchPlain(entry.sourceUrl);
       const anchorIndex = entry.dateAnchor ? text.lastIndexOf(entry.dateAnchor) : -1;
       const sourceText = anchorIndex >= 0 ? text.slice(anchorIndex) : text;
       parsed = entry.parseDates === false ? null : parseEventDate(sourceText, entry.editionYear);
+      locationDrift = locationMayHaveChanged(sourceText, entry.location);
       sourceStatus = parsed ? "confirmed" : hasUsableDates(previousRecord) ? "fetch-failed" : "not-announced";
       if (!parsed && hasUsableDates(previousRecord)) {
         error = "No target-year date could be parsed; retained the previous confirmed date";
@@ -195,12 +215,13 @@ async function main() {
       error = caught instanceof Error ? caught.message : String(caught);
       if (previous.get(entry.id)?.sourceStatus === "confirmed") failures += 1;
     }
-    const record = recordFor(entry, previous.get(entry.id), now, text, sourceStatus, parsed, error);
+    const record = recordFor(entry, previous.get(entry.id), now, text, sourceStatus, parsed, locationDrift, error);
     records.push(record);
     const old = previous.get(entry.id);
     const change = record.startDate !== old?.startDate || record.endDate !== old?.endDate || record.sourceStatus !== old?.sourceStatus ? "changed" : "unchanged";
     const dates = record.startDate && record.endDate ? `${record.startDate} to ${record.endDate}` : "Dates TBA";
-    console.log(`${entry.name}: ${statusLabel(record.sourceStatus)} — ${dates} (${change})${error ? ` — ${error}` : ""}`);
+    const locationWarning = record.locationDrift ? " — location may have changed — re-verify" : "";
+    console.log(`${entry.name}: ${statusLabel(record.sourceStatus)} — ${dates} (${change})${locationWarning}${error ? ` — ${error}` : ""}`);
   }
 
   const output = `import type { GeneratedEventRecord } from "./generated-event-types";\n\nexport const generatedEvents: GeneratedEventRecord[] = ${JSON.stringify(records, null, 2)};\n`;

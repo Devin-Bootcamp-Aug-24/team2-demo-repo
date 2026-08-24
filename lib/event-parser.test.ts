@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractLocation, parseEventDate } from "./event-parser";
+import { parseEventDate } from "./event-parser";
 
 describe("event date parser", () => {
   it("parses a day-first range", () => {
@@ -38,24 +38,4 @@ describe("event date parser", () => {
     expect(parseEventDate("TechNet Indo-Pacific 2026 | October 26-29, 2026", 2027)).toBeNull();
   });
 
-  it("extracts a city and state from a published event snippet", () => {
-    const text = "The 2027 Summit is taking place at the Kansas City Convention Center, Kansas City, MO, May 5-7.";
-    const date = parseEventDate(text, 2027);
-    expect(date).not.toBeNull();
-    expect(extractLocation(text, date!)).toMatchObject({ city: "Kansas City", state: "MO", venue: "Kansas City Convention Center" });
-  });
-
-  it("extracts a venue and city from a published space event snippet", () => {
-    const text = "April 12–15 2027 The Broadmoor, Colorado Springs, CO USA";
-    const date = parseEventDate(text, 2027);
-    expect(date).not.toBeNull();
-    expect(extractLocation(text, date!)).toMatchObject({ city: "Colorado Springs", state: "CO", venue: "The Broadmoor" });
-  });
-
-  it("does not invent a location for an unrecognizable snippet", () => {
-    const text = "The 2027 event will be held at a location to be announced, April 12–15, 2027.";
-    const date = parseEventDate(text, 2027);
-    expect(date).not.toBeNull();
-    expect(extractLocation(text, date!)).toEqual({ city: "", state: "" });
-  });
 });

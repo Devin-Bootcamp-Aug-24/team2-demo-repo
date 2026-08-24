@@ -7,6 +7,8 @@ export type GeneratedEventRecord = {
   startDate: string | null;
   endDate: string | null;
   location: { city: string; state: string; venue?: string; display?: string };
+  locationSourceText: string | null;
+  locationDrift: boolean;
   organizingAssociation: string;
   sponsoringCustomer: string;
   organizingCustomer: string;
