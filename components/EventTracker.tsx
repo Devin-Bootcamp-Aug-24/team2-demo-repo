@@ -26,6 +26,9 @@ type Filters = { customer: string; association: string; owner: string; status: s
 type IconName = "calendar" | "search" | "chevron" | "plus" | "filter" | "location" | "users" | "close" | "arrow";
 type BudgetEdits = Record<string, BudgetPlan>;
 
+const emptyPlan: BudgetPlan = { registrationFee: null, headcount: 0, attending: false };
+const planFor = (budget: BudgetEdits, id: string) => budget[id] ?? emptyPlan;
+
 const initialFilters: Filters = { customer: "All customers", association: "All associations", owner: "All owners", status: "All attendance postures", search: "" };
 const customerOptions = (items: Event[]) => Array.from(new Set(items.flatMap((event) => [event.sponsoringCustomer, event.organizingCustomer, ...event.attendingCustomers]))).sort();
 const associationOptions = (items: Event[]) => Array.from(new Set(items.map((event) => event.organizingAssociation))).sort();
@@ -88,7 +91,7 @@ function BudgetControls({ event, plan, onChange }: { event: Event; plan: BudgetP
         <input aria-label={`${event.name} headcount`} type="number" min="0" step="1" value={plan.headcount || ""} onChange={(e) => onChange({ headcount: Math.max(0, Number.parseInt(e.target.value, 10) || 0) })} className="field w-16 px-2 py-1 text-[11px]" />
       </label>
       <label className="flex items-center gap-1 text-[10px] font-bold text-[#536677]">
-        Fee
+        Fee/person
         <span className="text-[#8b98a4]">$</span>
         <input aria-label={`${event.name} registration fee`} type="number" min="0" step="1" placeholder="TBA" value={plan.registrationFee ?? ""} onChange={(e) => {
           const value = e.target.value.trim();
@@ -147,7 +150,7 @@ function QuarterView({ year, fiscal, items, budget, onBudgetChange, onDrill }: {
                     <button onClick={() => onDrill(month.start)} className="mb-2 flex items-center gap-2 text-left text-xs font-bold uppercase tracking-wider text-[#4e687d] hover:text-[#159a9c]">
                       {monthLabel(month.start)} <span className="text-[#aab5bf]">· {monthEvents.length}</span><Icon name="chevron" size={12} />
                     </button>
-                    {monthEvents.length ? <div className="grid gap-x-6 md:grid-cols-2">{monthEvents.map((event) => <EventRow key={event.id} event={event} compact plan={budget[event.id]} onBudgetChange={(patch) => onBudgetChange(event.id, patch)} />)}</div> : <p className="pb-2 text-xs text-[#a6b0b9]">No events scheduled</p>}
+                    {monthEvents.length ? <div className="grid gap-x-6 md:grid-cols-2">{monthEvents.map((event) => <EventRow key={event.id} event={event} compact plan={planFor(budget, event.id)} onBudgetChange={(patch) => onBudgetChange(event.id, patch)} />)}</div> : <p className="pb-2 text-xs text-[#a6b0b9]">No events scheduled</p>}
                   </div>
                 );
               })}
@@ -217,7 +220,7 @@ function WeekView({ anchor, items, budget, onBudgetChange }: { anchor: string; i
           const endIndex = Math.min(6, days.indexOf(event.endDate) >= 0 ? days.indexOf(event.endDate) : 6);
           return (
             <div key={event.id} className="grid min-h-[120px] grid-cols-[230px_repeat(7,minmax(90px,1fr))] border-b border-[#edf0f3] last:border-0">
-              <div className="p-4"><div className="flex items-start gap-2"><span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: associationColors[event.organizingAssociation] ?? "#63768a" }} /><div><p className="text-xs font-bold leading-snug text-[#1c2a39]">{event.name}</p><p className="mt-1 text-[10px] font-semibold text-[#8793a0]">{event.organizingAssociation} · Attendance: {attendanceLabel(event.status)}</p><div className="mt-2 text-[10px] leading-relaxed text-[#708292]"><strong>{formatDateRange(event.startDate, event.endDate, true)}</strong><br />{locationLabel(event)}<br />Sponsor: {event.sponsoringCustomer}<br />Organizer: {event.organizingCustomer}<br />Owner: {event.managedBy}<br />Attending: {event.attendingCustomers.join(", ")}<br />{event.notes}<br /><a href={event.sourceUrl} target="_blank" rel="noreferrer" className="font-semibold text-[#138c89] hover:underline">Official source</a>{event.verifiedAt && <span> · Verified {new Date(event.verifiedAt).toLocaleDateString("en-US")}</span>}</div><BudgetControls event={event} plan={budget[event.id]} onChange={(patch) => onBudgetChange(event.id, patch)} /></div></div></div>
+              <div className="p-4"><div className="flex items-start gap-2"><span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: associationColors[event.organizingAssociation] ?? "#63768a" }} /><div><p className="text-xs font-bold leading-snug text-[#1c2a39]">{event.name}</p><p className="mt-1 text-[10px] font-semibold text-[#8793a0]">{event.organizingAssociation} · Attendance: {attendanceLabel(event.status)}</p><div className="mt-2 text-[10px] leading-relaxed text-[#708292]"><strong>{formatDateRange(event.startDate, event.endDate, true)}</strong><br />{locationLabel(event)}<br />Sponsor: {event.sponsoringCustomer}<br />Organizer: {event.organizingCustomer}<br />Owner: {event.managedBy}<br />Attending: {event.attendingCustomers.join(", ")}<br />{event.notes}<br /><a href={event.sourceUrl} target="_blank" rel="noreferrer" className="font-semibold text-[#138c89] hover:underline">Official source</a>{event.verifiedAt && <span> · Verified {new Date(event.verifiedAt).toLocaleDateString("en-US")}</span>}</div><BudgetControls event={event} plan={planFor(budget, event.id)} onChange={(patch) => onBudgetChange(event.id, patch)} /></div></div></div>
               {days.map((day, index) => <div key={day} className={`border-l border-[#edf0f3] ${index >= startIndex && index <= endIndex ? "bg-[#f2fbfa]" : ""}`} />)}
             </div>
           );
@@ -326,7 +329,7 @@ export default function EventTracker() {
   const drillMonth = (dateValue: string) => { setAnchor(dateValue); setView("month"); };
   const drillWeek = (dateValue: string) => { setAnchor(dateValue); setView("week"); };
   const clearFilters = () => setFilters(initialFilters);
-  const onBudgetChange = (id: string, patch: Partial<BudgetPlan>) => setBudget((current) => ({ ...current, [id]: { ...current[id], ...patch } }));
+  const onBudgetChange = (id: string, patch: Partial<BudgetPlan>) => setBudget((current) => ({ ...current, [id]: { ...planFor(current, id), ...patch } }));
   const activeFilterCount = [filters.customer, filters.association, filters.owner, filters.status].filter((value) => !value.startsWith("All")).length + (filters.search ? 1 : 0);
   return (
     <main className="min-h-screen">
@@ -350,7 +353,7 @@ export default function EventTracker() {
           </details>
         </div>
         <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
-          <div>{filteredItems.length === 0 ? <EmptyState /> : view === "quarter" ? <><QuarterView year={cursorYear} fiscal={fiscal} items={datedItems} budget={budget} onBudgetChange={onBudgetChange} onDrill={drillMonth} />{tbaItems.length > 0 && <section className="mt-5 rounded-xl border border-dashed border-[#d6c99f] bg-[#fffdf6] p-5"><div className="mb-3 flex items-center justify-between"><div><p className="eyebrow text-[#9a741a]">Source status</p><h2 className="display-font mt-1 text-xl font-bold text-[#3b3525]">Dates TBA</h2></div><span className="rounded-full bg-[#fff0c9] px-2 py-1 text-[10px] font-bold text-[#906814]">{tbaItems.length} not scheduled</span></div><div className="grid gap-3 md:grid-cols-2">{tbaItems.map((event) => <div key={event.id} className="rounded-lg border border-[#eee4c7] bg-white p-3"><p className="font-bold text-[#273746]">{event.name}</p><p className="mt-1 text-[11px] text-[#7d6d45]">{event.organizingAssociation} · Not yet announced by organizer</p><a href={event.sourceUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-[11px] font-semibold text-[#138c89] hover:underline">Check official source</a><BudgetControls event={event} plan={budget[event.id]} onChange={(patch) => onBudgetChange(event.id, patch)} /></div>)}</div></section>}</> : view === "month" ? <MonthView anchor={anchor} items={datedItems} onDrill={drillWeek} /> : <WeekView anchor={anchor} items={datedItems} budget={budget} onBudgetChange={onBudgetChange} />}</div>
+          <div>{filteredItems.length === 0 ? <EmptyState /> : view === "quarter" ? <><QuarterView year={cursorYear} fiscal={fiscal} items={datedItems} budget={budget} onBudgetChange={onBudgetChange} onDrill={drillMonth} />{tbaItems.length > 0 && <section className="mt-5 rounded-xl border border-dashed border-[#d6c99f] bg-[#fffdf6] p-5"><div className="mb-3 flex items-center justify-between"><div><p className="eyebrow text-[#9a741a]">Source status</p><h2 className="display-font mt-1 text-xl font-bold text-[#3b3525]">Dates TBA</h2></div><span className="rounded-full bg-[#fff0c9] px-2 py-1 text-[10px] font-bold text-[#906814]">{tbaItems.length} not scheduled</span></div><div className="grid gap-3 md:grid-cols-2">{tbaItems.map((event) => <div key={event.id} className="rounded-lg border border-[#eee4c7] bg-white p-3"><p className="font-bold text-[#273746]">{event.name}</p><p className="mt-1 text-[11px] text-[#7d6d45]">{event.organizingAssociation} · Not yet announced by organizer</p><a href={event.sourceUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-[11px] font-semibold text-[#138c89] hover:underline">Check official source</a><BudgetControls event={event} plan={planFor(budget, event.id)} onChange={(patch) => onBudgetChange(event.id, patch)} /></div>)}</div></section>}</> : view === "month" ? <MonthView anchor={anchor} items={datedItems} onDrill={drillWeek} /> : <WeekView anchor={anchor} items={datedItems} budget={budget} onBudgetChange={onBudgetChange} />}</div>
           <div className="hidden lg:block"><BudgetPanel year={cursorYear} fiscal={fiscal} totals={budgetTotals} /></div>
         </div>
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-[11px] text-[#83909c]"><div><span className="mr-3 font-bold text-[#526b7d]">Association key</span>{Array.from(new Set(items.map((event) => event.organizingAssociation))).sort().map((name) => <span key={name} className="mr-3 inline-flex items-center gap-1.5"><i className="h-2 w-2 rounded-full" style={{ backgroundColor: associationColors[name] ?? "#63768a" }} />{name}</span>)}</div><p>Official sources · Refresh weekly</p></div>
