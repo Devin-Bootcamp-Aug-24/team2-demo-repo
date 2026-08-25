@@ -103,5 +103,11 @@ The app reads events from the local SQLite database through Prisma. Set
 combines the generated sourced records, internal assignments, manual events, and
 the planning fee map. Prisma migrations are intentionally not committed; local
 schema changes use Prisma's database push/development workflow.
+
+Because migrations are not committed, a schema change that renames or drops a
+column requires `npx prisma db push --accept-data-loss` on databases that already
+hold rows, followed by `npx prisma db seed`. The seed rebuilds every event record
+from the committed data files, so no source-of-truth data lives only in the
+database.
 `app/page.tsx` loads records with `listEvents()` and passes them to the client
 tracker; attendance posture and budget fields are stored alongside source metadata.

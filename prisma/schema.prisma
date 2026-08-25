@@ -28,10 +28,10 @@ model Event {
   managedBy             String
   status                EventStatus
   notes                 String
-  sourceUrl             String
+  sourceUrl             String   @default("")
   sourceSnippet         String?
   verifiedAt            String?
-  sourceStatus          String
+  sourceStatus          String   @default("unverified")
   locationDrift         Boolean  @default(false)
   attending             Boolean  @default(false)
   headcount             Int      @default(0)
