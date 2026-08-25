@@ -312,9 +312,13 @@ export default function EventTracker({ initialEvents }: { initialEvents: Event[]
           const parsed = JSON.parse(stored) as BudgetEdits | { plans?: BudgetEdits };
           const storedBudget = storedBudgetFrom(parsed);
           setBudget({ ...budgetForEvents(initialEvents), ...storedBudget });
-          setItems((current) => current.map((event) => storedBudget[event.id]
-            ? { ...event, registrationFeeUnverified: false }
-            : event));
+          setItems((current) => current.map((event) => {
+            const storedPlan = storedBudget[event.id];
+            if (!storedPlan || storedPlan.registrationFee === event.registrationFee) {
+              return event;
+            }
+            return { ...event, registrationFeeUnverified: false };
+          }));
         }
       } catch {
         // Ignore malformed or unavailable local storage and use the seed values.
@@ -361,8 +365,15 @@ export default function EventTracker({ initialEvents }: { initialEvents: Event[]
   const onBudgetChange = (id: string, patch: Partial<BudgetPlan>) => {
     setBudget((current) => ({ ...current, [id]: { ...planFor(current, id), ...patch } }));
     if ("registrationFee" in patch) {
+      const registrationFee = patch.registrationFee;
       setItems((current) => current.map((event) => event.id === id
-        ? { ...event, registrationFeeUnverified: false, registrationFee: patch.registrationFee }
+        ? {
+          ...event,
+          registrationFee,
+          ...(registrationFee !== event.registrationFee
+            ? { registrationFeeUnverified: false }
+            : {})
+        }
         : event));
     }
   };

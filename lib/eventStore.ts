@@ -37,6 +37,6 @@ export async function listEvents(): Promise<Event[]> {
     attending: event.attending,
     headcount: event.headcount,
     registrationFee: event.registrationFee,
-    registrationFeeUnverified: event.registrationFee != null && event.sourceStatus !== "unverified"
+    registrationFeeUnverified: event.registrationFee != null
   }));
 }
