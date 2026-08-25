@@ -16,18 +16,26 @@ enum EventStatus {
 model Event {
   id                    String   @id
   name                  String
-  startDate             String
-  endDate               String
+  startDate             String?
+  endDate               String?
   locationCity          String
   locationState         String
   locationVenue         String?
+  locationDisplay       String?
   organizingAssociation String
   sponsoringCustomer    String
   organizingCustomer    String
   managedBy             String
   status                EventStatus
   notes                 String
-  registrationCost      Int?
+  sourceUrl             String
+  sourceSnippet         String?
+  verifiedAt            String?
+  sourceStatus          String
+  locationDrift         Boolean  @default(false)
+  attending             Boolean  @default(false)
+  headcount             Int      @default(0)
+  registrationFee       Int?
   attendingCustomers    AttendingCustomer[]
 
   @@index([startDate])

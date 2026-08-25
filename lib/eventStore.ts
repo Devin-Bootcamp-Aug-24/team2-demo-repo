@@ -5,10 +5,10 @@ export async function listEvents(): Promise<Event[]> {
   const rows = await prisma.event.findMany({
     include: {
       attendingCustomers: {
-        orderBy: { name: "asc" },
-      },
+        orderBy: { name: "asc" }
+      }
     },
-    orderBy: { startDate: "asc" },
+    orderBy: { startDate: "asc" }
   });
 
   return rows.map((event) => ({
@@ -20,6 +20,7 @@ export async function listEvents(): Promise<Event[]> {
       city: event.locationCity,
       state: event.locationState,
       venue: event.locationVenue ?? undefined,
+      display: event.locationDisplay ?? undefined
     },
     organizingAssociation: event.organizingAssociation,
     sponsoringCustomer: event.sponsoringCustomer,
@@ -28,6 +29,14 @@ export async function listEvents(): Promise<Event[]> {
     attendingCustomers: event.attendingCustomers.map((customer) => customer.name),
     status: event.status as EventStatus,
     notes: event.notes,
-    registrationCost: event.registrationCost ?? undefined,
+    sourceUrl: event.sourceUrl,
+    sourceSnippet: event.sourceSnippet,
+    verifiedAt: event.verifiedAt,
+    sourceStatus: event.sourceStatus as Event["sourceStatus"],
+    locationDrift: event.locationDrift,
+    attending: event.attending,
+    headcount: event.headcount,
+    registrationFee: event.registrationFee,
+    registrationFeeUnverified: event.registrationFee != null
   }));
 }

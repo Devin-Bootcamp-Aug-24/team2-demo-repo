@@ -37,7 +37,7 @@ export function endOfWeek(value: string): string {
 }
 
 export function overlaps(event: Pick<Event, "startDate" | "endDate">, range: DateRange): boolean {
-  return event.startDate <= range.end && event.endDate >= range.start;
+  return Boolean(event.startDate && event.endDate && event.startDate <= range.end && event.endDate >= range.start);
 }
 
 export function monthRange(year: number, month: number): DateRange {
