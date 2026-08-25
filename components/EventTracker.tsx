@@ -34,31 +34,35 @@ const associationOptions = (items: Event[]) => Array.from(new Set(items.map((eve
 const ownerOptions = (items: Event[]) => Array.from(new Set(items.map((event) => event.managedBy))).sort();
 
 const STAR_PATH = "M0,-26 L6.11,-8.41 L24.73,-8.03 L9.89,3.21 L15.28,21.03 L0,10.4 L-15.28,21.03 L-9.89,3.21 L-24.73,-8.03 L-6.11,-8.41 Z";
-const STAR_ROW_COUNTS = Array.from({ length: 9 }, (_, row) => (row % 2 === 0 ? 6 : 5));
+const STAR_POSITIONS = Array.from({ length: 9 }, (_, row) => {
+  const columns = row % 2 === 0 ? [1, 3, 5, 7, 9, 11] : [2, 4, 6, 8, 10];
+  return columns.map((column) => ({ left: (column / 12) * 100, top: ((row + 1) / 10) * 100 }));
+}).flat();
 
 function FlagBackdrop() {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0">
       <div
-        className="absolute inset-y-0 left-[24%] right-0"
+        className="absolute inset-y-0 left-[18%] right-0"
         style={{
           background:
             "repeating-linear-gradient(to bottom, rgba(178,34,52,0.62) 0, rgba(178,34,52,0.62) 7.6923%, rgba(255,255,255,0.06) 7.6923%, rgba(255,255,255,0.06) 15.3846%)"
         }}
       />
       <div
-        className="absolute inset-y-0 left-[24%] right-0"
-        style={{ background: "linear-gradient(to right, rgba(9,25,45,0.35) 0%, rgba(9,25,45,0.1) 30%, rgba(9,25,45,0.4) 100%)" }}
+        className="absolute inset-y-0 left-[18%] right-0"
+        style={{ background: "linear-gradient(to right, rgba(9,25,45,0.9) 0%, rgba(9,25,45,0.5) 18%, rgba(9,25,45,0.12) 45%, rgba(9,25,45,0.4) 100%)" }}
       />
-      <div className="absolute inset-y-0 left-0 flex w-[24%] flex-col justify-center gap-[1px] border-r border-white/10 bg-[#0f2748] px-3 py-2">
-        {STAR_ROW_COUNTS.map((count, row) => (
-          <div key={row} className="flex justify-around">
-            {Array.from({ length: count }, (_, star) => (
-              <svg key={star} viewBox="-30 -30 60 60" className="h-[7px] w-[7px] opacity-55">
-                <path d={STAR_PATH} fill="#ffffff" />
-              </svg>
-            ))}
-          </div>
+      <div className="absolute inset-y-0 left-0 w-[18%] border-r border-white/10 bg-[#0f2748]">
+        {STAR_POSITIONS.map((star) => (
+          <svg
+            key={`${star.left}-${star.top}`}
+            viewBox="-30 -30 60 60"
+            className="absolute h-[6px] w-[6px] -translate-x-1/2 -translate-y-1/2 opacity-60"
+            style={{ left: `${star.left}%`, top: `${star.top}%` }}
+          >
+            <path d={STAR_PATH} fill="#ffffff" />
+          </svg>
         ))}
       </div>
       <div className="absolute bottom-0 left-0 h-[3px] w-full bg-[#b22234]" />
