@@ -39,20 +39,35 @@ const STAR_ROWS = Array.from({ length: 9 }, (_, row) => {
   const offset = row % 2 === 0 ? 1 : 2;
   return Array.from({ length: count }, (_, column) => ({ x: 63.3 * (offset + column * 2), y: 53.8 * (row + 1) }));
 }).flat();
+const STRIPE_FADE = "linear-gradient(to right, transparent 34%, rgba(0,0,0,0.5) 62%, #000 92%)";
+const STAR_FADE = "linear-gradient(to right, #000 50%, transparent 100%)";
 
-function FlagBand() {
+function FlagBackdrop() {
   return (
-    <div
-      aria-hidden
-      className="relative h-10 w-full overflow-hidden"
-      style={{ background: "repeating-linear-gradient(to bottom, #b22234 0, #b22234 7.6923%, #ffffff 7.6923%, #ffffff 15.3846%)" }}
-    >
-      <svg viewBox="0 0 760 538" className="absolute left-0 top-0 h-[21.5px] w-[30.4px]" preserveAspectRatio="none">
-        <rect width="760" height="538" fill="#3c3b6e" />
-        {STAR_ROWS.map((star) => (
-          <path key={`${star.x}-${star.y}`} d={STAR_PATH} fill="#ffffff" transform={`translate(${star.x} ${star.y})`} />
-        ))}
+    <div aria-hidden className="pointer-events-none absolute inset-0">
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "repeating-linear-gradient(to bottom, rgba(178,34,52,0.62) 0, rgba(178,34,52,0.62) 7.6923%, rgba(255,255,255,0.07) 7.6923%, rgba(255,255,255,0.07) 15.3846%)",
+          maskImage: STRIPE_FADE,
+          WebkitMaskImage: STRIPE_FADE
+        }}
+      />
+      <div
+        className="absolute inset-0"
+        style={{ background: "linear-gradient(to right, rgba(9,25,45,0.96) 0%, rgba(9,25,45,0.72) 42%, rgba(9,25,45,0.3) 100%)" }}
+      />
+      <svg className="absolute inset-y-0 left-0 w-[34%]" style={{ maskImage: STAR_FADE, WebkitMaskImage: STAR_FADE }}>
+        <defs>
+          <pattern id="flag-stars" width="52" height="34" patternUnits="userSpaceOnUse">
+            <path d={STAR_PATH} fill="#ffffff" transform="translate(13 9) scale(0.19)" />
+            <path d={STAR_PATH} fill="#ffffff" transform="translate(39 26) scale(0.19)" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#flag-stars)" opacity="0.3" />
       </svg>
+      <div className="absolute bottom-0 left-0 h-[3px] w-full bg-[#b22234]" />
     </div>
   );
 }
@@ -264,9 +279,9 @@ export default function EventTracker({ initialEvents }: { initialEvents: Event[]
   const activeFilterCount = [filters.customer, filters.association, filters.owner, filters.status].filter((value) => !value.startsWith("All")).length + (filters.search ? 1 : 0);
   return (
     <main className="min-h-screen">
-      <header className="bg-[#0b1f3a] text-white">
-        <FlagBand />
-        <div className="mx-auto max-w-[1440px] px-5 py-5 sm:px-8">
+      <header className="relative overflow-hidden bg-[#0b1f3a] text-white">
+        <FlagBackdrop />
+        <div className="relative mx-auto max-w-[1440px] px-5 py-5 sm:px-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#12b8b0] shadow-lg shadow-[#12b8b0]/20"><Icon name="calendar" size={21} /></div><div><p className="eyebrow text-[#77d8d2]">Mission planning</p><h1 className="display-font text-2xl font-bold tracking-tight">Federal events</h1></div></div>
             <div className="flex items-center gap-3"><span className="hidden text-xs text-[#9eb3c6] sm:inline">Internal team workspace</span><button onClick={() => setShowAdd(true)} className="inline-flex items-center gap-2 rounded-lg bg-[#f4b740] px-3 py-2 text-xs font-bold text-[#17212e] transition hover:bg-[#ffca5b]"><Icon name="plus" size={15} /> Add event</button><div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#284563] text-xs font-bold">MC</div></div>
