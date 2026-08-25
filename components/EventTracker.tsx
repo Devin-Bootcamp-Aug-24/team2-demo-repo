@@ -33,6 +33,50 @@ const customerOptions = (items: Event[]) => Array.from(new Set(items.flatMap((ev
 const associationOptions = (items: Event[]) => Array.from(new Set(items.map((event) => event.organizingAssociation))).sort();
 const ownerOptions = (items: Event[]) => Array.from(new Set(items.map((event) => event.managedBy))).sort();
 
+const STAR_PATH = "M0,-26 L6.11,-8.41 L24.73,-8.03 L9.89,3.21 L15.28,21.03 L0,10.4 L-15.28,21.03 L-9.89,3.21 L-24.73,-8.03 L-6.11,-8.41 Z";
+const STAR_POSITIONS = Array.from({ length: 9 }, (_, row) => {
+  const columns = row % 2 === 0 ? [1, 3, 5, 7, 9, 11] : [2, 4, 6, 8, 10];
+  return columns.map((column) => ({ left: (column / 12) * 100, top: ((row + 1) / 10) * 100 }));
+}).flat();
+const STRIPE_FADE = "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.45) 18%, #000 46%)";
+const CANTON_FADE = "linear-gradient(to right, #000 62%, transparent 100%)";
+
+function FlagBackdrop() {
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0">
+      <div
+        className="absolute inset-y-0 left-[12%] right-0"
+        style={{
+          background:
+            "repeating-linear-gradient(to bottom, rgba(178,34,52,0.62) 0, rgba(178,34,52,0.62) 7.6923%, rgba(255,255,255,0.06) 7.6923%, rgba(255,255,255,0.06) 15.3846%)",
+          maskImage: STRIPE_FADE,
+          WebkitMaskImage: STRIPE_FADE
+        }}
+      />
+      <div
+        className="absolute inset-y-0 left-[12%] right-0"
+        style={{ background: "linear-gradient(to right, rgba(9,25,45,0.9) 0%, rgba(9,25,45,0.5) 26%, rgba(9,25,45,0.12) 50%, rgba(9,25,45,0.4) 100%)" }}
+      />
+      <div
+        className="absolute inset-y-0 left-0 w-[22%] bg-[#0f2748]"
+        style={{ maskImage: CANTON_FADE, WebkitMaskImage: CANTON_FADE }}
+      >
+        {STAR_POSITIONS.map((star) => (
+          <svg
+            key={`${star.left}-${star.top}`}
+            viewBox="-30 -30 60 60"
+            className="absolute h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 opacity-60"
+            style={{ left: `${star.left * 0.82}%`, top: `${star.top}%` }}
+          >
+            <path d={STAR_PATH} fill="#ffffff" />
+          </svg>
+        ))}
+      </div>
+      <div className="absolute bottom-0 left-0 h-[3px] w-full bg-[#b22234]" />
+    </div>
+  );
+}
+
 function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
   const common = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
   if (name === "calendar") return <svg {...common}><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M16 2v4M8 2v4M3 9h18" /></svg>;
@@ -240,8 +284,9 @@ export default function EventTracker({ initialEvents }: { initialEvents: Event[]
   const activeFilterCount = [filters.customer, filters.association, filters.owner, filters.status].filter((value) => !value.startsWith("All")).length + (filters.search ? 1 : 0);
   return (
     <main className="min-h-screen">
-      <header className="bg-[#0b1f3a] text-white">
-        <div className="mx-auto max-w-[1440px] px-5 py-5 sm:px-8">
+      <header className="relative overflow-hidden bg-[#0b1f3a] text-white">
+        <FlagBackdrop />
+        <div className="relative mx-auto max-w-[1440px] px-5 py-5 sm:px-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#12b8b0] shadow-lg shadow-[#12b8b0]/20"><Icon name="calendar" size={21} /></div><div><p className="eyebrow text-[#77d8d2]">Mission planning</p><h1 className="display-font text-2xl font-bold tracking-tight">Federal events</h1></div></div>
             <div className="flex items-center gap-3"><span className="hidden text-xs text-[#9eb3c6] sm:inline">Internal team workspace</span><button onClick={() => setShowAdd(true)} className="inline-flex items-center gap-2 rounded-lg bg-[#f4b740] px-3 py-2 text-xs font-bold text-[#17212e] transition hover:bg-[#ffca5b]"><Icon name="plus" size={15} /> Add event</button><div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#284563] text-xs font-bold">MC</div></div>
