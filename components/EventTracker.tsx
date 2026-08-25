@@ -33,6 +33,30 @@ const customerOptions = (items: Event[]) => Array.from(new Set(items.flatMap((ev
 const associationOptions = (items: Event[]) => Array.from(new Set(items.map((event) => event.organizingAssociation))).sort();
 const ownerOptions = (items: Event[]) => Array.from(new Set(items.map((event) => event.managedBy))).sort();
 
+const STAR_PATH = "M0,-26 L6.11,-8.41 L24.73,-8.03 L9.89,3.21 L15.28,21.03 L0,10.4 L-15.28,21.03 L-9.89,3.21 L-24.73,-8.03 L-6.11,-8.41 Z";
+const STAR_ROWS = Array.from({ length: 9 }, (_, row) => {
+  const count = row % 2 === 0 ? 6 : 5;
+  const offset = row % 2 === 0 ? 1 : 2;
+  return Array.from({ length: count }, (_, column) => ({ x: 63.3 * (offset + column * 2), y: 53.8 * (row + 1) }));
+}).flat();
+
+function FlagBand() {
+  return (
+    <div
+      aria-hidden
+      className="relative h-10 w-full overflow-hidden"
+      style={{ background: "repeating-linear-gradient(to bottom, #b22234 0, #b22234 7.6923%, #ffffff 7.6923%, #ffffff 15.3846%)" }}
+    >
+      <svg viewBox="0 0 760 538" className="absolute left-0 top-0 h-[21.5px] w-[30.4px]" preserveAspectRatio="none">
+        <rect width="760" height="538" fill="#3c3b6e" />
+        {STAR_ROWS.map((star) => (
+          <path key={`${star.x}-${star.y}`} d={STAR_PATH} fill="#ffffff" transform={`translate(${star.x} ${star.y})`} />
+        ))}
+      </svg>
+    </div>
+  );
+}
+
 function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
   const common = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
   if (name === "calendar") return <svg {...common}><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M16 2v4M8 2v4M3 9h18" /></svg>;
@@ -241,6 +265,7 @@ export default function EventTracker({ initialEvents }: { initialEvents: Event[]
   return (
     <main className="min-h-screen">
       <header className="bg-[#0b1f3a] text-white">
+        <FlagBand />
         <div className="mx-auto max-w-[1440px] px-5 py-5 sm:px-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#12b8b0] shadow-lg shadow-[#12b8b0]/20"><Icon name="calendar" size={21} /></div><div><p className="eyebrow text-[#77d8d2]">Mission planning</p><h1 className="display-font text-2xl font-bold tracking-tight">Federal events</h1></div></div>
