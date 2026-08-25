@@ -38,28 +38,35 @@ const STAR_POSITIONS = Array.from({ length: 9 }, (_, row) => {
   const columns = row % 2 === 0 ? [1, 3, 5, 7, 9, 11] : [2, 4, 6, 8, 10];
   return columns.map((column) => ({ left: (column / 12) * 100, top: ((row + 1) / 10) * 100 }));
 }).flat();
+const STRIPE_FADE = "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.45) 18%, #000 46%)";
+const CANTON_FADE = "linear-gradient(to right, #000 62%, transparent 100%)";
 
 function FlagBackdrop() {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0">
       <div
-        className="absolute inset-y-0 left-[18%] right-0"
+        className="absolute inset-y-0 left-[12%] right-0"
         style={{
           background:
-            "repeating-linear-gradient(to bottom, rgba(178,34,52,0.62) 0, rgba(178,34,52,0.62) 7.6923%, rgba(255,255,255,0.06) 7.6923%, rgba(255,255,255,0.06) 15.3846%)"
+            "repeating-linear-gradient(to bottom, rgba(178,34,52,0.62) 0, rgba(178,34,52,0.62) 7.6923%, rgba(255,255,255,0.06) 7.6923%, rgba(255,255,255,0.06) 15.3846%)",
+          maskImage: STRIPE_FADE,
+          WebkitMaskImage: STRIPE_FADE
         }}
       />
       <div
-        className="absolute inset-y-0 left-[18%] right-0"
-        style={{ background: "linear-gradient(to right, rgba(9,25,45,0.9) 0%, rgba(9,25,45,0.5) 18%, rgba(9,25,45,0.12) 45%, rgba(9,25,45,0.4) 100%)" }}
+        className="absolute inset-y-0 left-[12%] right-0"
+        style={{ background: "linear-gradient(to right, rgba(9,25,45,0.9) 0%, rgba(9,25,45,0.5) 26%, rgba(9,25,45,0.12) 50%, rgba(9,25,45,0.4) 100%)" }}
       />
-      <div className="absolute inset-y-0 left-0 w-[18%] border-r border-white/10 bg-[#0f2748]">
+      <div
+        className="absolute inset-y-0 left-0 w-[22%] bg-[#0f2748]"
+        style={{ maskImage: CANTON_FADE, WebkitMaskImage: CANTON_FADE }}
+      >
         {STAR_POSITIONS.map((star) => (
           <svg
             key={`${star.left}-${star.top}`}
             viewBox="-30 -30 60 60"
-            className="absolute h-[6px] w-[6px] -translate-x-1/2 -translate-y-1/2 opacity-60"
-            style={{ left: `${star.left}%`, top: `${star.top}%` }}
+            className="absolute h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 opacity-60"
+            style={{ left: `${star.left * 0.82}%`, top: `${star.top}%` }}
           >
             <path d={STAR_PATH} fill="#ffffff" />
           </svg>
