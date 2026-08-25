@@ -34,39 +34,33 @@ const associationOptions = (items: Event[]) => Array.from(new Set(items.map((eve
 const ownerOptions = (items: Event[]) => Array.from(new Set(items.map((event) => event.managedBy))).sort();
 
 const STAR_PATH = "M0,-26 L6.11,-8.41 L24.73,-8.03 L9.89,3.21 L15.28,21.03 L0,10.4 L-15.28,21.03 L-9.89,3.21 L-24.73,-8.03 L-6.11,-8.41 Z";
-const STAR_ROWS = Array.from({ length: 9 }, (_, row) => {
-  const count = row % 2 === 0 ? 6 : 5;
-  const offset = row % 2 === 0 ? 1 : 2;
-  return Array.from({ length: count }, (_, column) => ({ x: 63.3 * (offset + column * 2), y: 53.8 * (row + 1) }));
-}).flat();
-const STRIPE_FADE = "linear-gradient(to right, transparent 34%, rgba(0,0,0,0.5) 62%, #000 92%)";
-const STAR_FADE = "linear-gradient(to right, #000 50%, transparent 100%)";
+const STAR_ROW_COUNTS = Array.from({ length: 9 }, (_, row) => (row % 2 === 0 ? 6 : 5));
 
 function FlagBackdrop() {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0">
       <div
-        className="absolute inset-0"
+        className="absolute inset-y-0 left-[24%] right-0"
         style={{
           background:
-            "repeating-linear-gradient(to bottom, rgba(178,34,52,0.62) 0, rgba(178,34,52,0.62) 7.6923%, rgba(255,255,255,0.07) 7.6923%, rgba(255,255,255,0.07) 15.3846%)",
-          maskImage: STRIPE_FADE,
-          WebkitMaskImage: STRIPE_FADE
+            "repeating-linear-gradient(to bottom, rgba(178,34,52,0.62) 0, rgba(178,34,52,0.62) 7.6923%, rgba(255,255,255,0.06) 7.6923%, rgba(255,255,255,0.06) 15.3846%)"
         }}
       />
       <div
-        className="absolute inset-0"
-        style={{ background: "linear-gradient(to right, rgba(9,25,45,0.96) 0%, rgba(9,25,45,0.72) 42%, rgba(9,25,45,0.3) 100%)" }}
+        className="absolute inset-y-0 left-[24%] right-0"
+        style={{ background: "linear-gradient(to right, rgba(9,25,45,0.35) 0%, rgba(9,25,45,0.1) 30%, rgba(9,25,45,0.4) 100%)" }}
       />
-      <svg className="absolute inset-y-0 left-0 w-[34%]" style={{ maskImage: STAR_FADE, WebkitMaskImage: STAR_FADE }}>
-        <defs>
-          <pattern id="flag-stars" width="52" height="34" patternUnits="userSpaceOnUse">
-            <path d={STAR_PATH} fill="#ffffff" transform="translate(13 9) scale(0.19)" />
-            <path d={STAR_PATH} fill="#ffffff" transform="translate(39 26) scale(0.19)" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#flag-stars)" opacity="0.3" />
-      </svg>
+      <div className="absolute inset-y-0 left-0 flex w-[24%] flex-col justify-center gap-[1px] border-r border-white/10 bg-[#0f2748] px-3 py-2">
+        {STAR_ROW_COUNTS.map((count, row) => (
+          <div key={row} className="flex justify-around">
+            {Array.from({ length: count }, (_, star) => (
+              <svg key={star} viewBox="-30 -30 60 60" className="h-[7px] w-[7px] opacity-55">
+                <path d={STAR_PATH} fill="#ffffff" />
+              </svg>
+            ))}
+          </div>
+        ))}
+      </div>
       <div className="absolute bottom-0 left-0 h-[3px] w-full bg-[#b22234]" />
     </div>
   );
