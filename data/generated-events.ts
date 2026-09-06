@@ -26,7 +26,7 @@ export const generatedEvents: GeneratedEventRecord[] = [
     "notes": "Internal Army engagement assignment; not published by AUSA.",
     "sourceUrl": "https://meetings.ausa.org/annual/2026/index.cfm",
     "sourceSnippet": "n is the AUSA Annual Meeting and Exposition? The AUSA Annual Meeting and Exposition will take place 12-14 October 2026 at the Walter E. Washington Convention Center (WEWCC). Walter E Washington Convention Center 801 Al",
-    "verifiedAt": "2026-08-25T14:45:28.357Z",
+    "verifiedAt": "2026-09-06T11:38:18.765Z",
     "sourceStatus": "confirmed"
   },
   {
@@ -54,7 +54,7 @@ export const generatedEvents: GeneratedEventRecord[] = [
     "notes": "Internal GEOINT engagement assignment; not published by USGIF.",
     "sourceUrl": "https://usgif.org/geoint-symposium/2027-symposium/",
     "sourceSnippet": "ress Releases Event Recaps Search GEOINT Symposium 2027 GEOINT Symposium 2027 GEOINT Symposium 2027 May 17 - 19, 2027 Gaylord Palms Resort & Convention Center, Kissimmee, FL May 17 - 19, 2027 Gaylord Palms Resort & Co",
-    "verifiedAt": "2026-08-25T14:45:28.357Z",
+    "verifiedAt": "2026-09-06T11:38:18.765Z",
     "sourceStatus": "confirmed"
   },
   {
@@ -81,7 +81,7 @@ export const generatedEvents: GeneratedEventRecord[] = [
     "notes": "Internal community engagement assignment; not published by USGIF.",
     "sourceUrl": "https://usgif.org/event/geogala-2026/",
     "sourceSnippet": "m Anthology Support Scholarships and Education News Press Releases Event Recaps Search GEOGala 2026 Thursday, December 3, 2026 5:00 pm - 10:00 pm ET The Ritz Carlton 1700 Tysons Blvd, McLean, VA Homepage Join us for the GEOINT",
-    "verifiedAt": "2026-08-25T14:45:28.357Z",
+    "verifiedAt": "2026-09-06T11:38:18.765Z",
     "sourceStatus": "confirmed"
   },
   {
@@ -109,8 +109,7 @@ export const generatedEvents: GeneratedEventRecord[] = [
     "sourceUrl": "https://www.dia.mil/",
     "sourceSnippet": null,
     "verifiedAt": null,
-    "sourceStatus": "fetch-failed",
-    "refreshError": "fetch failed"
+    "sourceStatus": "not-announced"
   },
   {
     "id": "technet-indo-pacific",
@@ -349,7 +348,7 @@ export const generatedEvents: GeneratedEventRecord[] = [
     "notes": "Internal air and space engagement assignment; not published by AFA.",
     "sourceUrl": "https://www.afa.org/afa-warfare-symposium/",
     "sourceSnippet": "at AFA Branding Guide & Logos Give to AFA Warfare Symposium The Next Warfare Symposium Is Happening March 1-3, 2027 Aurora, Colo. The Warfare Symposium is a premier professional development event for the U.S. Air Fo",
-    "verifiedAt": "2026-08-25T14:45:28.357Z",
+    "verifiedAt": "2026-09-06T11:38:18.765Z",
     "sourceStatus": "confirmed"
   },
   {
@@ -377,7 +376,7 @@ export const generatedEvents: GeneratedEventRecord[] = [
     "notes": "Internal air and space engagement assignment; not published by AFA.",
     "sourceUrl": "https://www.afa.org/events/",
     "sourceSnippet": "2027 Air, Space & Cyber Conference September 20 to 22, 2027 Virtual and In-Person Event Warfare Symposium 2028 Warfare Symposium February 28 to March 1, 2028 V",
-    "verifiedAt": "2026-08-25T14:45:28.357Z",
+    "verifiedAt": "2026-09-06T11:38:18.765Z",
     "sourceStatus": "confirmed"
   },
   {
@@ -405,7 +404,7 @@ export const generatedEvents: GeneratedEventRecord[] = [
     "notes": "Internal maritime engagement assignment; not published by the Navy League.",
     "sourceUrl": "https://seaairspace.org/",
     "sourceSnippet": "publications sponsored, licensed by, or affiliated with other Sea-Air-Space sponsors or exhibitors. April 4-7, 2027 Sea-Air-Space 2027 Gaylord National Resort & Convention Center National Harbor, Maryland #SAS2027 C",
-    "verifiedAt": "2026-08-25T14:45:28.357Z",
+    "verifiedAt": "2026-09-06T11:38:18.765Z",
     "sourceStatus": "confirmed"
   },
   {
@@ -432,7 +431,7 @@ export const generatedEvents: GeneratedEventRecord[] = [
     "notes": "Internal Army aviation assignment; not published by AAAA.",
     "sourceUrl": "https://www.quad-a.org/",
     "sourceSnippet": "be heard in front of senior leaders and government officials. 2027 Army Aviation Warfighting Summit May 5-7, 2027 | Kansas City, MO Save the Dates! Join us in our new venue - Kansas City Convention Center in Kansa",
-    "verifiedAt": "2026-08-25T14:45:28.357Z",
+    "verifiedAt": "2026-09-06T11:38:18.765Z",
     "sourceStatus": "confirmed"
   },
   {
@@ -458,8 +457,8 @@ export const generatedEvents: GeneratedEventRecord[] = [
     "status": "Confirmed",
     "notes": "Internal special operations assignment; not published by USSOCOM or GSOF.",
     "sourceUrl": "https://sofweek.org/",
-    "sourceSnippet": "shaping the future of Special Operations. The collaboration extends far beyond Tampa. We’ll see you May 3–6, 2027! Out Now 2026 SOF Week Report Read Here Stay connected FUTURE PARTICIPATION 2027 Sales and Sponsors",
-    "verifiedAt": "2026-08-25T14:45:28.357Z",
+    "sourceSnippet": "SOF) Week is THE annual convention for the entire SOF Community. SOF Week 2027 will take place from 3-6 May 2027. Exhibitions: 4-6 May. SOF Week is Co-Hosted By 2026 GSOF • Website by Bricks & Clicks Marketing Si",
+    "verifiedAt": "2026-09-06T11:38:18.765Z",
     "sourceStatus": "confirmed"
   },
   {
@@ -485,7 +484,7 @@ export const generatedEvents: GeneratedEventRecord[] = [
     "notes": "Internal Marine Corps engagement assignment; not published by MCAA.",
     "sourceUrl": "https://marinemilitaryexpos.com/",
     "sourceSnippet": "mation Travel Information Search for: POPULAR SEARCHES Modern Day Marine Marine West Marine South Q April 13 – April 15, 2027 Washington, DC ATTEND EXHIBIT Save the Date for MDM 2027 Thank you for Attending Modern Day Marine",
-    "verifiedAt": "2026-08-25T14:45:28.357Z",
+    "verifiedAt": "2026-09-06T11:38:18.765Z",
     "sourceStatus": "confirmed"
   },
   {
@@ -539,10 +538,9 @@ export const generatedEvents: GeneratedEventRecord[] = [
     "status": "Confirmed",
     "notes": "Internal space engagement assignment; not published by Space Foundation.",
     "sourceUrl": "https://www.spacesymposium.org/",
-    "sourceSnippet": ": Space Foundation Space Symposium Discover Space Space Workforce for Tomorrow Donate SAVE THE DATE APRIL 12–15 2027 The Broadmoor, Colorado Springs, CO USA 231 Days 01 Hour 20 Minutes 59 Seconds Sign Up for Symposiu",
-    "verifiedAt": "2026-08-24T22:38:47.148Z",
-    "sourceStatus": "fetch-failed",
-    "refreshError": "fetch failed"
+    "sourceSnippet": ": Space Foundation Space Symposium Discover Space Space Workforce for Tomorrow Donate SAVE THE DATE APRIL 12–15 2027 The Broadmoor, Colorado Springs, CO USA 218 Days 12 Hours 21 Minutes 27 Seconds Sign Up for Symposi",
+    "verifiedAt": "2026-09-06T11:38:18.765Z",
+    "sourceStatus": "confirmed"
   },
   {
     "id": "ndia-expeditionary-warfare",
@@ -569,7 +567,6 @@ export const generatedEvents: GeneratedEventRecord[] = [
     "sourceUrl": "https://www.ndia.org/events",
     "sourceSnippet": null,
     "verifiedAt": null,
-    "sourceStatus": "fetch-failed",
-    "refreshError": "fetch failed"
+    "sourceStatus": "not-announced"
   }
 ];
