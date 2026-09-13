@@ -89,7 +89,7 @@ async function fetchInBrowser(url: string): Promise<string> {
     return value.replace(/\s+/g, " ").trim();
   } finally {
     ws?.close();
-    if (targetId) await sendCdp(controller, "Target.closeTarget", { targetId });
+    if (targetId) await sendCdp(controller, "Target.closeTarget", { targetId }).catch(() => undefined);
     controller.close();
   }
 }
