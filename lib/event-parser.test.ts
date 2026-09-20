@@ -14,6 +14,10 @@ describe("event date parser", () => {
     expect(parseEventDate("Monday, May 17, 2027 – Wednesday, May 19, 2027", 2027)).toMatchObject({ startDate: "2027-05-17", endDate: "2027-05-19" });
   });
 
+  it("parses long weekday forms joined by 'to'", () => {
+    expect(parseEventDate("Rocky Mountain Cyberspace Symposium 2027 (RMCS27) The Broadmoor Hotel, Colorado Springs, CO Monday, February 8, 2027 to Thursday, February 11, 2027", 2027)).toMatchObject({ startDate: "2027-02-08", endDate: "2027-02-11" });
+  });
+
   it("parses a date with the year on the next line", () => {
     expect(parseEventDate("APRIL 12–15\n2027", 2027)).toMatchObject({ startDate: "2027-04-12", endDate: "2027-04-15" });
   });

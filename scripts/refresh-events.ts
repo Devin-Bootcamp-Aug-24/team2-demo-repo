@@ -89,7 +89,7 @@ async function fetchInBrowser(url: string): Promise<string> {
     return value.replace(/\s+/g, " ").trim();
   } finally {
     ws?.close();
-    if (targetId) await sendCdp(controller, "Target.closeTarget", { targetId });
+    if (targetId) await sendCdp(controller, "Target.closeTarget", { targetId }).catch(() => undefined);
     controller.close();
   }
 }
@@ -208,7 +208,8 @@ async function main() {
       text = entry.fetchStrategy === "browser" ? await fetchInBrowser(entry.sourceUrl) : await fetchPlain(entry.sourceUrl);
       const anchorIndex = entry.dateAnchor ? text.lastIndexOf(entry.dateAnchor) : -1;
       const sourceText = anchorIndex >= 0 ? text.slice(anchorIndex) : text;
-      parsed = entry.parseDates === false ? null : parseEventDate(sourceText, entry.editionYear);
+      const anchorMissing = Boolean(entry.dateAnchor) && anchorIndex < 0;
+      parsed = entry.parseDates === false || anchorMissing ? null : parseEventDate(sourceText, entry.editionYear);
       locationDrift = locationMayHaveChanged(text, entry.location);
       sourceStatus = parsed ? "confirmed" : hasUsableDates(previousRecord) ? "fetch-failed" : "not-announced";
       if (!parsed && hasUsableDates(previousRecord)) {
