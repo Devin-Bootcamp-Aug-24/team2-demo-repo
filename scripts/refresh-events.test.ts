@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { sourceRegistry } from "../data/source-registry";
 import { generatedEvents } from "../data/generated-events";
 import { manualEvents } from "../data/manual-events";
-import { locationMayHaveChanged, recordFor, refreshExitCode } from "./refresh-events";
+import { anchoredText, locationMayHaveChanged, recordFor, refreshExitCode } from "./refresh-events";
 
 describe("refresh safety", () => {
   it("retains the last known good dates and reports a failed refresh", () => {
@@ -25,6 +25,13 @@ describe("refresh safety", () => {
     const location = sourceRegistry.find((source) => source.id === "ausa-annual-meeting")!.location!;
     expect(locationMayHaveChanged("Walter E. Washington Convention Center (WEWCC), Washington, D.C.", location)).toBe(false);
     expect(locationMayHaveChanged("The event location is now announced separately.", location)).toBe(true);
+  });
+
+  it("reads dates only from the anchored listing on a shared index page", () => {
+    const page = "Upcoming Events Rocky Mountain Cyberspace Symposium 2027 (RMCS27) The Broadmoor Hotel, Colorado Springs, CO Monday, February 8, 2027 to Thursday, February 11, 2027";
+    expect(anchoredText(page, "WEST 2027")).toBe("");
+    expect(anchoredText(page, "Rocky Mountain Cyberspace Symposium 2027")).toContain("February 8, 2027");
+    expect(anchoredText(page, undefined)).toBe(page);
   });
 
   it("refreshes only source-registry records, never manual events", () => {
