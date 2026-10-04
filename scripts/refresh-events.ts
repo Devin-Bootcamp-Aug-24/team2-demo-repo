@@ -89,7 +89,8 @@ async function fetchInBrowser(url: string): Promise<string> {
     return value.replace(/\s+/g, " ").trim();
   } finally {
     ws?.close();
-    if (targetId) await sendCdp(controller, "Target.closeTarget", { targetId });
+    // A slow tab close must not discard page text that was already read.
+    if (targetId) await sendCdp(controller, "Target.closeTarget", { targetId }).catch(() => fetch(`http://localhost:29229/json/close/${targetId}`).catch(() => undefined));
     controller.close();
   }
 }
@@ -187,6 +188,15 @@ function entryToRecord(entry: SourceRegistryEntry, assignment: typeof eventAssig
   };
 }
 
+// Shared index pages list many events; only read dates printed right after this entry's anchor.
+const anchorWindow = 400;
+
+export function anchoredText(text: string, anchor: string | undefined): string {
+  if (!anchor) return text;
+  const index = text.lastIndexOf(anchor);
+  return index >= 0 ? text.slice(index, index + anchorWindow) : "";
+}
+
 export function refreshExitCode(failures: number): number {
   return failures ? 1 : 0;
 }
@@ -206,9 +216,8 @@ async function main() {
     const previousRecord = previous.get(entry.id);
     try {
       text = entry.fetchStrategy === "browser" ? await fetchInBrowser(entry.sourceUrl) : await fetchPlain(entry.sourceUrl);
-      const anchorIndex = entry.dateAnchor ? text.lastIndexOf(entry.dateAnchor) : -1;
-      const sourceText = anchorIndex >= 0 ? text.slice(anchorIndex) : text;
-      parsed = entry.parseDates === false ? null : parseEventDate(sourceText, entry.editionYear);
+      const sourceText = anchoredText(text, entry.dateAnchor);
+      parsed = entry.parseDates === false || !sourceText ? null : parseEventDate(sourceText, entry.editionYear);
       locationDrift = locationMayHaveChanged(text, entry.location);
       sourceStatus = parsed ? "confirmed" : hasUsableDates(previousRecord) ? "fetch-failed" : "not-announced";
       if (!parsed && hasUsableDates(previousRecord)) {
