@@ -28,12 +28,12 @@ export const sourceRegistry: SourceRegistryEntry[] = [
   // AFCEA has not published FY2027 microsites yet, so these point to its official
   // event index or the prior-year microsite rather than an invented future URL.
   { id: "technet-indo-pacific", name: "TechNet Indo-Pacific", association: "AFCEA", sourceUrl: "https://events.afcea.org/TIP26/Public/Enter.aspx", fetchStrategy: "plain", editionYear: 2027 },
-  { id: "west", name: "WEST", association: "AFCEA / USNI", sourceUrl: "https://www.afcea.org/events", fetchStrategy: "plain", editionYear: 2027 },
-  { id: "technet-cyber", name: "TechNet Cyber", association: "AFCEA", sourceUrl: "https://www.afcea.org/events", fetchStrategy: "plain", editionYear: 2027 },
-  { id: "army-signal", name: "Army Signal Conference", association: "AFCEA", sourceUrl: "https://www.afcea.org/events", fetchStrategy: "plain", editionYear: 2027 },
-  { id: "dafitc", name: "DAFITC", association: "AFCEA", sourceUrl: "https://www.afcea.org/events", fetchStrategy: "plain", editionYear: 2027 },
-  { id: "dhits", name: "Defense Health Information Technology Symposium", association: "AFCEA", sourceUrl: "https://www.afcea.org/events", fetchStrategy: "plain", editionYear: 2027 },
-  { id: "rocky-mountain-cyberspace", name: "Rocky Mountain Cyberspace Symposium", association: "AFCEA", sourceUrl: "https://www.afcea.org/events", fetchStrategy: "plain", editionYear: 2027 },
+  { id: "west", name: "WEST", association: "AFCEA / USNI", sourceUrl: "https://www.afcea.org/events", fetchStrategy: "plain", editionYear: 2027, dateAnchor: "WEST 2027" },
+  { id: "technet-cyber", name: "TechNet Cyber", association: "AFCEA", sourceUrl: "https://www.afcea.org/events", fetchStrategy: "plain", editionYear: 2027, dateAnchor: "TechNet Cyber 2027" },
+  { id: "army-signal", name: "Army Signal Conference", association: "AFCEA", sourceUrl: "https://www.afcea.org/events", fetchStrategy: "plain", editionYear: 2027, dateAnchor: "Army Signal Conference 2027" },
+  { id: "dafitc", name: "DAFITC", association: "AFCEA", sourceUrl: "https://www.afcea.org/events", fetchStrategy: "plain", editionYear: 2027, dateAnchor: "DAFITC 2027" },
+  { id: "dhits", name: "Defense Health Information Technology Symposium", association: "AFCEA", sourceUrl: "https://www.afcea.org/events", fetchStrategy: "plain", editionYear: 2027, dateAnchor: "Defense Health Information Technology Symposium 2027" },
+  { id: "rocky-mountain-cyberspace", name: "Rocky Mountain Cyberspace Symposium", association: "AFCEA", sourceUrl: "https://www.afcea.org/events", fetchStrategy: "plain", editionYear: 2027, dateAnchor: "Rocky Mountain Cyberspace Symposium 2027", location: { city: "Colorado Springs", state: "CO", venue: "The Broadmoor Hotel", sourceText: "The Broadmoor Hotel, Colorado Springs, CO" } },
   { id: "intelligence-national-security", name: "AFCEA/INSA Intelligence and National Security Summit", association: "INSA", sourceUrl: "https://intelsummit.org/", fetchStrategy: "plain", editionYear: 2027 },
   { id: "afa-warfare", name: "2027 Warfare Symposium", association: "AFA", sourceUrl: "https://www.afa.org/afa-warfare-symposium/", fetchStrategy: "plain", editionYear: 2027, location: { city: "Aurora", state: "CO", sourceText: "Aurora, Colo." } },
   { id: "afa-air-space-cyber", name: "2027 Air, Space & Cyber Conference", association: "AFA", sourceUrl: "https://www.afa.org/events/", fetchStrategy: "plain", editionYear: 2027, dateAnchor: "2027 Air, Space & Cyber Conference", location: { city: "", state: "", display: "Virtual and In-Person Event", sourceText: "Virtual and In-Person Event" } },

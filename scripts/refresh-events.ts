@@ -187,6 +187,16 @@ function entryToRecord(entry: SourceRegistryEntry, assignment: typeof eventAssig
   };
 }
 
+const anchorWindow = 300;
+
+// Shared index pages list many events, so an anchored entry only reads the text
+// right after its own listing and is never parsed if that listing is absent.
+export function dateSourceText(text: string, entry: Pick<SourceRegistryEntry, "dateAnchor">): string | null {
+  if (!entry.dateAnchor) return text;
+  const anchorIndex = text.lastIndexOf(entry.dateAnchor);
+  return anchorIndex >= 0 ? text.slice(anchorIndex, anchorIndex + anchorWindow) : null;
+}
+
 export function refreshExitCode(failures: number): number {
   return failures ? 1 : 0;
 }
@@ -206,16 +216,15 @@ async function main() {
     const previousRecord = previous.get(entry.id);
     try {
       text = entry.fetchStrategy === "browser" ? await fetchInBrowser(entry.sourceUrl) : await fetchPlain(entry.sourceUrl);
-      const anchorIndex = entry.dateAnchor ? text.lastIndexOf(entry.dateAnchor) : -1;
-      const sourceText = anchorIndex >= 0 ? text.slice(anchorIndex) : text;
-      parsed = entry.parseDates === false ? null : parseEventDate(sourceText, entry.editionYear);
+      const sourceText = dateSourceText(text, entry);
+      parsed = entry.parseDates === false || sourceText === null ? null : parseEventDate(sourceText, entry.editionYear);
       locationDrift = locationMayHaveChanged(text, entry.location);
       sourceStatus = parsed ? "confirmed" : hasUsableDates(previousRecord) ? "fetch-failed" : "not-announced";
       if (!parsed && hasUsableDates(previousRecord)) {
         error = "No target-year date could be parsed; retained the previous confirmed date";
         failures += 1;
       }
-      text = sourceText;
+      text = sourceText ?? text;
     } catch (caught) {
       sourceStatus = "fetch-failed";
       error = caught instanceof Error ? caught.message : String(caught);
