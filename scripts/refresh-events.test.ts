@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { sourceRegistry } from "../data/source-registry";
 import { generatedEvents } from "../data/generated-events";
 import { manualEvents } from "../data/manual-events";
-import { locationMayHaveChanged, recordFor, refreshExitCode } from "./refresh-events";
+import { dateSearchText, locationMayHaveChanged, recordFor, refreshExitCode } from "./refresh-events";
+import { parseEventDate } from "../lib/event-parser";
 
 describe("refresh safety", () => {
   it("retains the last known good dates and reports a failed refresh", () => {
@@ -32,5 +33,14 @@ describe("refresh safety", () => {
     expect(manualEvents.every((event) => !sourceIds.has(event.id))).toBe(true);
     expect(sourceRegistry.map((source) => source.id)).not.toContain("evt-034");
     expect(sourceRegistry.map((source) => source.id)).not.toContain("evt-035");
+  });
+
+  it("never assigns one event's date on a shared index page to another event", () => {
+    const page = "Featured Events 08 Feb Rocky Mountain Cyberspace Symposium 2027 (RMCS27) The Broadmoor Hotel, Colorado Springs, CO Monday, February 8, 2027 to Thursday, February 11, 2027 Acquisition";
+    const west = sourceRegistry.find((source) => source.id === "west")!;
+    const rmcs = sourceRegistry.find((source) => source.id === "rocky-mountain-cyberspace")!;
+    expect(dateSearchText(west, page)).toBeNull();
+    expect(parseEventDate(dateSearchText(rmcs, page)!, rmcs.editionYear)).toMatchObject({ startDate: "2027-02-08", endDate: "2027-02-11" });
+    expect(dateSearchText({ ...rmcs, dateAnchor: "Missing Anchor" }, page)).toBeNull();
   });
 });
