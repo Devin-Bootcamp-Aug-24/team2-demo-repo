@@ -89,7 +89,11 @@ async function fetchInBrowser(url: string): Promise<string> {
     return value.replace(/\s+/g, " ").trim();
   } finally {
     ws?.close();
-    if (targetId) await sendCdp(controller, "Target.closeTarget", { targetId });
+    if (targetId) {
+      await sendCdp(controller, "Target.closeTarget", { targetId }).catch((caught: unknown) => {
+        console.warn(`Could not close refresh tab for ${url}: ${caught instanceof Error ? caught.message : String(caught)}`);
+      });
+    }
     controller.close();
   }
 }
@@ -140,6 +144,18 @@ export function locationMayHaveChanged(text: string, location: CuratedLocation |
   if (!location) return false;
   const normalizedPage = normalizedText(text);
   return ![location.sourceText, location.venue].filter(Boolean).some((value) => normalizedPage.includes(normalizedText(value!)));
+}
+
+const anchorWindow = 300;
+
+export function dateSearchText(entry: SourceRegistryEntry, text: string, registry: SourceRegistryEntry[] = sourceRegistry): string | null {
+  if (entry.parseDates === false) return null;
+  if (entry.dateAnchor) {
+    const anchorIndex = text.lastIndexOf(entry.dateAnchor);
+    return anchorIndex >= 0 ? text.slice(anchorIndex, anchorIndex + entry.dateAnchor.length + anchorWindow) : null;
+  }
+  const sharesSource = registry.some((other) => other.id !== entry.id && other.sourceUrl === entry.sourceUrl && other.parseDates !== false);
+  return sharesSource ? null : text;
 }
 
 export function recordFor(entry: SourceRegistryEntry, previous: PreviousRecord | undefined, now: string, text: string, status: SourceStatus, parsed: ParsedEventDate | null, locationDrift?: boolean, error?: string): GeneratedEventRecord {
@@ -206,16 +222,15 @@ async function main() {
     const previousRecord = previous.get(entry.id);
     try {
       text = entry.fetchStrategy === "browser" ? await fetchInBrowser(entry.sourceUrl) : await fetchPlain(entry.sourceUrl);
-      const anchorIndex = entry.dateAnchor ? text.lastIndexOf(entry.dateAnchor) : -1;
-      const sourceText = anchorIndex >= 0 ? text.slice(anchorIndex) : text;
-      parsed = entry.parseDates === false ? null : parseEventDate(sourceText, entry.editionYear);
+      const sourceText = dateSearchText(entry, text);
+      parsed = sourceText === null ? null : parseEventDate(sourceText, entry.editionYear);
       locationDrift = locationMayHaveChanged(text, entry.location);
       sourceStatus = parsed ? "confirmed" : hasUsableDates(previousRecord) ? "fetch-failed" : "not-announced";
       if (!parsed && hasUsableDates(previousRecord)) {
         error = "No target-year date could be parsed; retained the previous confirmed date";
         failures += 1;
       }
-      text = sourceText;
+      text = sourceText ?? text;
     } catch (caught) {
       sourceStatus = "fetch-failed";
       error = caught instanceof Error ? caught.message : String(caught);
