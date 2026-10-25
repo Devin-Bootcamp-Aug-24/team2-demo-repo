@@ -89,7 +89,7 @@ async function fetchInBrowser(url: string): Promise<string> {
     return value.replace(/\s+/g, " ").trim();
   } finally {
     ws?.close();
-    if (targetId) await sendCdp(controller, "Target.closeTarget", { targetId });
+    if (targetId) await sendCdp(controller, "Target.closeTarget", { targetId }).catch(() => undefined);
     controller.close();
   }
 }
@@ -187,6 +187,14 @@ function entryToRecord(entry: SourceRegistryEntry, assignment: typeof eventAssig
   };
 }
 
+const anchorWindow = 400;
+
+export function dateSourceText(text: string, dateAnchor: string | undefined): string {
+  if (!dateAnchor) return text;
+  const anchorIndex = text.toLowerCase().lastIndexOf(dateAnchor.toLowerCase());
+  return anchorIndex >= 0 ? text.slice(anchorIndex, anchorIndex + anchorWindow) : "";
+}
+
 export function refreshExitCode(failures: number): number {
   return failures ? 1 : 0;
 }
@@ -206,8 +214,7 @@ async function main() {
     const previousRecord = previous.get(entry.id);
     try {
       text = entry.fetchStrategy === "browser" ? await fetchInBrowser(entry.sourceUrl) : await fetchPlain(entry.sourceUrl);
-      const anchorIndex = entry.dateAnchor ? text.lastIndexOf(entry.dateAnchor) : -1;
-      const sourceText = anchorIndex >= 0 ? text.slice(anchorIndex) : text;
+      const sourceText = dateSourceText(text, entry.dateAnchor);
       parsed = entry.parseDates === false ? null : parseEventDate(sourceText, entry.editionYear);
       locationDrift = locationMayHaveChanged(text, entry.location);
       sourceStatus = parsed ? "confirmed" : hasUsableDates(previousRecord) ? "fetch-failed" : "not-announced";
