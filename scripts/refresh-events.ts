@@ -89,7 +89,7 @@ async function fetchInBrowser(url: string): Promise<string> {
     return value.replace(/\s+/g, " ").trim();
   } finally {
     ws?.close();
-    if (targetId) await sendCdp(controller, "Target.closeTarget", { targetId });
+    if (targetId) await sendCdp(controller, "Target.closeTarget", { targetId }).catch(() => undefined);
     controller.close();
   }
 }
@@ -187,6 +187,14 @@ function entryToRecord(entry: SourceRegistryEntry, assignment: typeof eventAssig
   };
 }
 
+const anchorWindow = 300;
+
+export function dateSearchText(text: string, dateAnchor: string | undefined): string | null {
+  if (!dateAnchor) return text;
+  const anchorIndex = text.lastIndexOf(dateAnchor);
+  return anchorIndex >= 0 ? text.slice(anchorIndex, anchorIndex + anchorWindow) : null;
+}
+
 export function refreshExitCode(failures: number): number {
   return failures ? 1 : 0;
 }
@@ -206,16 +214,15 @@ async function main() {
     const previousRecord = previous.get(entry.id);
     try {
       text = entry.fetchStrategy === "browser" ? await fetchInBrowser(entry.sourceUrl) : await fetchPlain(entry.sourceUrl);
-      const anchorIndex = entry.dateAnchor ? text.lastIndexOf(entry.dateAnchor) : -1;
-      const sourceText = anchorIndex >= 0 ? text.slice(anchorIndex) : text;
-      parsed = entry.parseDates === false ? null : parseEventDate(sourceText, entry.editionYear);
+      const sourceText = dateSearchText(text, entry.dateAnchor);
+      parsed = entry.parseDates === false || sourceText === null ? null : parseEventDate(sourceText, entry.editionYear);
       locationDrift = locationMayHaveChanged(text, entry.location);
       sourceStatus = parsed ? "confirmed" : hasUsableDates(previousRecord) ? "fetch-failed" : "not-announced";
       if (!parsed && hasUsableDates(previousRecord)) {
         error = "No target-year date could be parsed; retained the previous confirmed date";
         failures += 1;
       }
-      text = sourceText;
+      text = sourceText ?? text;
     } catch (caught) {
       sourceStatus = "fetch-failed";
       error = caught instanceof Error ? caught.message : String(caught);
