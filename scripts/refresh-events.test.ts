@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { sourceRegistry } from "../data/source-registry";
 import { generatedEvents } from "../data/generated-events";
 import { manualEvents } from "../data/manual-events";
-import { locationMayHaveChanged, recordFor, refreshExitCode } from "./refresh-events";
+import { dateSourceText, locationMayHaveChanged, recordFor, refreshExitCode } from "./refresh-events";
 
 describe("refresh safety", () => {
   it("retains the last known good dates and reports a failed refresh", () => {
@@ -21,6 +21,18 @@ describe("refresh safety", () => {
     expect(refreshExitCode(1)).toBe(1);
   });
 
+  it("keeps the last known good dates across consecutive failed refreshes", () => {
+    const previous = generatedEvents.find((event) => event.id === "ausa-annual-meeting")!;
+    const entry = sourceRegistry.find((source) => source.id === "ausa-annual-meeting")!;
+    const firstFailure = recordFor(entry, previous, "2026-08-24T00:00:00.000Z", "", "fetch-failed", null, undefined, "fetch failed");
+    const secondFailure = recordFor(entry, firstFailure, "2026-08-31T00:00:00.000Z", "", "fetch-failed", null, undefined, "fetch failed");
+
+    expect(secondFailure.startDate).toBe(previous.startDate);
+    expect(secondFailure.endDate).toBe(previous.endDate);
+    expect(secondFailure.verifiedAt).toBe(previous.verifiedAt);
+    expect(secondFailure.sourceStatus).toBe("fetch-failed");
+  });
+
   it("flags location drift without rewriting the curated location", () => {
     const location = sourceRegistry.find((source) => source.id === "ausa-annual-meeting")!.location!;
     expect(locationMayHaveChanged("Walter E. Washington Convention Center (WEWCC), Washington, D.C.", location)).toBe(false);
@@ -32,5 +44,12 @@ describe("refresh safety", () => {
     expect(manualEvents.every((event) => !sourceIds.has(event.id))).toBe(true);
     expect(sourceRegistry.map((source) => source.id)).not.toContain("evt-034");
     expect(sourceRegistry.map((source) => source.id)).not.toContain("evt-035");
+  });
+
+  it("scopes date parsing to the anchored listing on a shared index page", () => {
+    const indexPage = "08 Feb Rocky Mountain Cyberspace Symposium 2027 (RMCS27) The Broadmoor Hotel, Colorado Springs, CO Monday, February 8, 2027 to Thursday, February 11, 2027 Acquisition 16 Feb WEST Conference and Exhibition San Diego Convention Center, San Diego, CA Tuesday, February 16, 2027 to Thursday, February 18, 2027";
+    expect(dateSourceText(indexPage, { dateAnchor: "WEST Conference and Exhibition" })).toMatch(/^WEST Conference and Exhibition/);
+    expect(dateSourceText(indexPage, { dateAnchor: "TechNet Cyber" })).toBe("");
+    expect(dateSourceText(indexPage, {})).toBe(indexPage);
   });
 });

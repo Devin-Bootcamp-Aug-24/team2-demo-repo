@@ -43,7 +43,7 @@ export function parseEventDate(text: string, targetYear: number): ParsedEventDat
     });
   }
 
-  const longWeekdayPattern = new RegExp(`(${monthPattern})\\s+(\\d{1,2}),\\s*(\\d{4})\\s*[–-]\\s*${weekdayPattern},?\\s*(${monthPattern})\\s+(\\d{1,2}),\\s*(\\d{4})`, "gi");
+  const longWeekdayPattern = new RegExp(`(${monthPattern})\\s+(\\d{1,2}),\\s*(\\d{4})\\s*(?:[–-]|to)\\s*${weekdayPattern},?\\s*(${monthPattern})\\s+(\\d{1,2}),\\s*(\\d{4})`, "gi");
   for (const match of Array.from(text.matchAll(longWeekdayPattern))) {
     if (Number(match[3]) !== targetYear || Number(match[6]) !== targetYear) continue;
     const index = match.index ?? 0;
