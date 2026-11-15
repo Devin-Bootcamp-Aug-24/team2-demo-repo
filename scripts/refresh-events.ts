@@ -89,7 +89,7 @@ async function fetchInBrowser(url: string): Promise<string> {
     return value.replace(/\s+/g, " ").trim();
   } finally {
     ws?.close();
-    if (targetId) await sendCdp(controller, "Target.closeTarget", { targetId });
+    if (targetId) await sendCdp(controller, "Target.closeTarget", { targetId }).catch(() => undefined);
     controller.close();
   }
 }
@@ -117,7 +117,7 @@ function statusLabel(status: SourceStatus): string {
 }
 
 function hasUsableDates(record: PreviousRecord | undefined): record is PreviousRecord & { startDate: string; endDate: string } {
-  return Boolean(record?.sourceStatus === "confirmed" && record.startDate && record.endDate && /^\d{4}-\d{2}-\d{2}$/.test(record.startDate) && /^\d{4}-\d{2}-\d{2}$/.test(record.endDate));
+  return Boolean((record?.sourceStatus === "confirmed" || record?.sourceStatus === "fetch-failed") && record.verifiedAt && record.startDate && record.endDate && /^\d{4}-\d{2}-\d{2}$/.test(record.startDate) && /^\d{4}-\d{2}-\d{2}$/.test(record.endDate));
 }
 
 function assignmentFor(entry: SourceRegistryEntry): typeof eventAssignments[string] {
@@ -187,6 +187,14 @@ function entryToRecord(entry: SourceRegistryEntry, assignment: typeof eventAssig
   };
 }
 
+const anchorWindow = 250;
+
+export function dateSourceText(text: string, entry: Pick<SourceRegistryEntry, "dateAnchor">): string {
+  if (!entry.dateAnchor) return text;
+  const anchorIndex = text.lastIndexOf(entry.dateAnchor);
+  return anchorIndex >= 0 ? text.slice(anchorIndex, anchorIndex + anchorWindow) : "";
+}
+
 export function refreshExitCode(failures: number): number {
   return failures ? 1 : 0;
 }
@@ -206,8 +214,7 @@ async function main() {
     const previousRecord = previous.get(entry.id);
     try {
       text = entry.fetchStrategy === "browser" ? await fetchInBrowser(entry.sourceUrl) : await fetchPlain(entry.sourceUrl);
-      const anchorIndex = entry.dateAnchor ? text.lastIndexOf(entry.dateAnchor) : -1;
-      const sourceText = anchorIndex >= 0 ? text.slice(anchorIndex) : text;
+      const sourceText = dateSourceText(text, entry);
       parsed = entry.parseDates === false ? null : parseEventDate(sourceText, entry.editionYear);
       locationDrift = locationMayHaveChanged(text, entry.location);
       sourceStatus = parsed ? "confirmed" : hasUsableDates(previousRecord) ? "fetch-failed" : "not-announced";
@@ -219,7 +226,7 @@ async function main() {
     } catch (caught) {
       sourceStatus = "fetch-failed";
       error = caught instanceof Error ? caught.message : String(caught);
-      if (previous.get(entry.id)?.sourceStatus === "confirmed") failures += 1;
+      if (hasUsableDates(previousRecord)) failures += 1;
     }
     const record = recordFor(entry, previous.get(entry.id), now, text, sourceStatus, parsed, locationDrift, error);
     records.push(record);
