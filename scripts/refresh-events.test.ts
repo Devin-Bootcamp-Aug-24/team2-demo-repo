@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { sourceRegistry } from "../data/source-registry";
 import { generatedEvents } from "../data/generated-events";
 import { manualEvents } from "../data/manual-events";
-import { locationMayHaveChanged, recordFor, refreshExitCode } from "./refresh-events";
+import { anchoredText, locationMayHaveChanged, recordFor, refreshExitCode } from "./refresh-events";
 
 describe("refresh safety", () => {
   it("retains the last known good dates and reports a failed refresh", () => {
@@ -25,6 +25,13 @@ describe("refresh safety", () => {
     const location = sourceRegistry.find((source) => source.id === "ausa-annual-meeting")!.location!;
     expect(locationMayHaveChanged("Walter E. Washington Convention Center (WEWCC), Washington, D.C.", location)).toBe(false);
     expect(locationMayHaveChanged("The event location is now announced separately.", location)).toBe(true);
+  });
+
+  it("only reads dates next to an event's anchor on a shared index page", () => {
+    const page = "AFCEA Small Business Procurement Series: January 2027 Wednesday, January 20, 2027 WEST Conference and Exhibition San Diego Convention Center, San Diego, CA Tuesday, February 16, 2027 to Thursday, February 18, 2027";
+    expect(anchoredText(page, "TechNet Cyber 2027")).toBeNull();
+    expect(anchoredText(page, "WEST Conference and Exhibition")).toMatch(/^WEST Conference and Exhibition .*February 18, 2027$/);
+    expect(anchoredText(page, undefined)).toBe(page);
   });
 
   it("refreshes only source-registry records, never manual events", () => {
